@@ -34,3 +34,21 @@ export const saveTraining = async (userId: number,training: Training): Promise<T
   }
 };
 
+export const updateTraining = async (training: Training): Promise<Training> => {
+  try {
+    const response = await fetch(`${API_URL}/${training.id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(training),
+    });
+    if (!response.ok) {
+      throw new Error(`Error ${response.status}: ${response.statusText}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error updating training:', error);
+    throw error;
+  }
+};

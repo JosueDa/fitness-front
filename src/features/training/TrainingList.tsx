@@ -4,7 +4,7 @@ import { useAuth } from '../../auth/AuthContext';
 import { fetchUserData } from '../../api/userApi';
 import './TrainingList.css';
 import { Box, Button, InputLabel, MenuItem, Modal, Select, TextField, Typography } from '@mui/material';
-import { fetchTrainingsByUser, saveTraining } from '../../api/trainingApi';
+import { fetchTrainingsByUser, saveTraining, updateTraining } from '../../api/trainingApi';
 import type { User, Training } from '../../interfaces';
 
 interface TrainingListProps {
@@ -19,7 +19,7 @@ const TrainingList: React.FC<TrainingListProps> = ({ userId }) => {
   const [userData, setUserData] = useState<User | null>(null);
   const [open, setOpen] = React.useState(false);
   const effectiveUserId = userId || user?.id;
-
+  const [editingTraining, setEditingTraining] = useState<Training | null>(null);
   const [newTraining, setNewTraining] = useState<Training>({
     id: 0,
     name: '',
@@ -38,16 +38,39 @@ const TrainingList: React.FC<TrainingListProps> = ({ userId }) => {
     }));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    if (!user?.id) return;
 
-    if (!user?.id)
-      return;
-
-    saveTraining(user.id, newTraining);
+    if (editingTraining) {
+      // Actualizar
+      await updateTraining(newTraining);
+      setTrainings(trainings.map(t => t.id === newTraining.id ? newTraining : t));
+    } else {
+      // Crear
+      const saved = await saveTraining(user.id, newTraining);
+      setTrainings([...trainings, saved]);
+    }
     handleClose();
   };
 
-  const handleOpen = () => setOpen(true);
+  const handleOpen = (training?: Training) => {
+    if (training) {
+      setNewTraining(training);
+      setEditingTraining(training);
+    } else {
+      setNewTraining({
+        id: 0,
+        name: '',
+        activity_type: '',
+        duration: 0,
+        intensity: '',
+        date: new Date().toISOString(),
+        note: '',
+      });
+      setEditingTraining(null);
+    }
+    setOpen(true);
+  };
   const handleClose = () => setOpen(false);
 
   useEffect(() => {
@@ -115,7 +138,7 @@ const TrainingList: React.FC<TrainingListProps> = ({ userId }) => {
     <div className="training-list">
       <div className="training-header">
         <h2>Entrenamientos de {userData?.name || 'Usuario'}</h2>
-        <Button onClick={handleOpen}>Agregar Entrenamiento</Button>
+        <Button onClick={() => handleOpen()}>Agregar Entrenamiento</Button>
       </div>
 
       {trainings.length === 0 ? (
@@ -147,11 +170,14 @@ const TrainingList: React.FC<TrainingListProps> = ({ userId }) => {
                   </div>
                 )}
               </div>
-
               <div className="card-footer">
                 <Link
-                  to={`/training/${training.id}/edit`}
+                  to="#"
                   className="edit-button"
+                  onClick={e => {
+                    e.preventDefault();
+                    handleOpen(training);
+                  }}
                 >
                   Editar
                 </Link>
@@ -168,9 +194,7 @@ const TrainingList: React.FC<TrainingListProps> = ({ userId }) => {
       >
         <Box className="modal-box">
           <Typography id="modal-modal-title" variant="h6" component="h2">
-            Agregar entrenamiento
-          </Typography>
-
+            {editingTraining ? 'Editar entrenamiento' : 'Agregar entrenamiento'}          </Typography>
           <TextField
             name="activity_type"
             label="Actividad"
@@ -182,49 +206,49 @@ const TrainingList: React.FC<TrainingListProps> = ({ userId }) => {
           />
 
           <Box display="flex" gap={2} sx={{ mb: 2 }}>
+            <TextField
+              name="duration"
+              label="Duración"
+              variant="standard"
+              type="number"
+              value={newTraining.duration}
+              onChange={handleInputChange}
+            />
+            <Box sx={{ flex: 1 }}>
+              <InputLabel id="demo-simple-select-label">Intensidad</InputLabel>
+              <Select
+                labelId="demo-simple-select-label"
+                name="intensity"
+                fullWidth
+                id="demo-simple-select"
+                value={newTraining.intensity}
+                label="Intensidad"
+                onChange={handleInputChange}
+              >
+                <MenuItem value={"Alta"}>Alta</MenuItem>
+                <MenuItem value={"Media"}>Media</MenuItem>
+                <MenuItem value={"Baja"}>Baja</MenuItem>
+              </Select>
+            </Box>
+          </Box>
+
           <TextField
-            name="duration"
-            label="Duración"
-            variant="standard"
-            type="number"
-            value={newTraining.duration}
+            name="note"
+            label="Notas"
+            multiline
+            rows={4}
+            fullWidth
+            sx={{ mb: 2, mt: 2 }}
+            value={newTraining.note}
             onChange={handleInputChange}
           />
-          <Box sx={{ flex: 1 }}>
-            <InputLabel id="demo-simple-select-label">Intensidad</InputLabel>
-            <Select
-              labelId="demo-simple-select-label"
-              name="intensity"
-              fullWidth
-              id="demo-simple-select"
-              value={newTraining.intensity}
-              label="Intensidad"
-              onChange={handleInputChange}
-            >
-              <MenuItem value={"Alta"}>Alta</MenuItem>
-              <MenuItem value={"Media"}>Media</MenuItem>
-              <MenuItem value={"Baja"}>Baja</MenuItem>
-            </Select>
+
+          <Box display="flex" justifyContent="center" mt={2}>
+            <Button variant="contained" onClick={handleSave}>Guardar</Button>
           </Box>
+
         </Box>
-
-        <TextField
-          name="note"
-          label="Notas"
-          multiline
-          rows={4}
-          fullWidth
-          sx={{ mb: 2, mt: 2 }}
-          value={newTraining.note}
-          onChange={handleInputChange}
-        />
-
-        <Box display="flex" justifyContent="center" mt={2}>
-          <Button variant="contained" onClick={handleSave}>Guardar</Button>
-        </Box>
-
-      </Box>
-    </Modal>
+      </Modal>
     </div >
   );
 };
