@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import './Login.css';
 
@@ -88,6 +88,7 @@ const LoginPage: React.FC = () => {
         <button type="submit" className="login-button" disabled={loading}>
           {loading ? 'Cargando...' : 'Ingresar'}
         </button>
+        <p>Si aún no tienes una cuenta, <Link to="/register"><b>regístrate aquí</b></Link></p>
       </form>
     </div>
   );

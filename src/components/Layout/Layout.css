@@ -7,5 +7,10 @@
   .main-content {
     flex: 1;
     padding: 2rem 0;
-    background-color: var(--white);
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0.7)), url('/public/background.jpg');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    height:100vh;
+    width:100vw;
   }

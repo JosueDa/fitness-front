@@ -5,6 +5,7 @@ import { fetchUserData } from '../../api/userApi';
 import './TrainingList.css';
 import { Box, Button, InputLabel, MenuItem, Modal, Select, TextField, Typography } from '@mui/material';
 import { fetchTrainingsByUser, saveTraining, updateTraining } from '../../api/trainingApi';
+import { FaPen, FaTrash } from 'react-icons/fa';
 import type { User, Training } from '../../interfaces';
 
 interface TrainingListProps {
@@ -34,7 +35,7 @@ const TrainingList: React.FC<TrainingListProps> = ({ userId }) => {
     const { name, value, type } = e.target;
     setNewTraining(prev => ({
       ...prev,
-      [name]: type === 'number' ? Number(value) : value,
+      [name]: type === 'number' ? ( (value.charCode >= 48 && value.charCode <= 5 || value == '' || value.includes('.')) ? '' : Math.trunc(value) ) : value,
     }));
   };
 
@@ -137,8 +138,9 @@ const TrainingList: React.FC<TrainingListProps> = ({ userId }) => {
   return (
     <div className="training-list">
       <div className="training-header">
-        <h2>Entrenamientos de {userData?.name || 'Usuario'}</h2>
-        <Button onClick={() => handleOpen()}>Agregar Entrenamiento</Button>
+        <h2 className='training-header-title-desktop'>Entrenamientos de <b>{userData?.name || 'Usuario'}</b></h2>
+        <h2 className='training-header-title-mobile'>Entrenamientos de <br/><b>{userData?.name || 'Usuario'}</b></h2>
+        <Button className='training-header-button' variant="outlined" color="primary" onClick={() => handleOpen()}><b>Agregar Entrenamiento +</b></Button>
       </div>
 
       {trainings.length === 0 ? (
@@ -153,15 +155,17 @@ const TrainingList: React.FC<TrainingListProps> = ({ userId }) => {
           {trainings.map(training => (
             <div key={training.id} className="training-card">
               <div className="card-header">
-                <h3>{training.activity_type}</h3>
+                <h3 className='training-title'>{training.activity_type}</h3>
                 <span className={`intensity ${training.intensity.toLowerCase()}`}>
-                  {training.intensity}
+                  <b>{training.intensity}</b>
                 </span>
               </div>
 
               <div className="card-body">
-                <p><strong>Duración:</strong> {training.duration} minutos</p>
-                <p><strong>Fecha:</strong>{new Date(training.date).toLocaleDateString()}</p>
+                <div className='card-details'>
+                  <p><strong>Duración:</strong> {training.duration} minutos</p>
+                  <p><strong>{new Date(training.date).toLocaleDateString()}</strong></p>
+                </div>
 
                 {training.note && (
                   <div className="notes">
@@ -171,16 +175,39 @@ const TrainingList: React.FC<TrainingListProps> = ({ userId }) => {
                 )}
               </div>
               <div className="card-footer">
-                <Link
-                  to="#"
-                  className="edit-button"
-                  onClick={e => {
-                    e.preventDefault();
-                    handleOpen(training);
-                  }}
-                >
-                  Editar
-                </Link>
+                <div className='card-footer-left'>
+                  <Link
+                    to="#"
+                    className="delete-button"
+                    onClick={e => {
+                      e.preventDefault();
+                      // Necesitamos una function que lance una alerta preguntando si está seguro y de confirmar, elminar el record. Tal vez vale la pena agregar una columna a todas las tablas llamada isDeleted para hacer puro soft delete.
+                      handleOpen(training);
+                    }}>
+                    <FaTrash className="delete-icon" />
+                  </Link>
+                </div>
+                <div className='card-footer-right'>
+                  <Link
+                    to="#"
+                    className="details-button"
+                    onClick={e => {
+                      e.preventDefault();
+                      handleOpen(training);
+                    }}>
+                    Detalles
+                  </Link>
+                  <Link
+                    to="#"
+                    className="edit-button"
+                    onClick={e => {
+                      e.preventDefault();
+                      // Necesitamos hacer esto mismo pero para un modal con todos los ejercicios
+                      handleOpen(training);
+                    }}>
+                    <FaPen className="edit-icon" />
+                  </Link>
+                </div>
               </div>
             </div>
           ))}
@@ -206,14 +233,17 @@ const TrainingList: React.FC<TrainingListProps> = ({ userId }) => {
           />
 
           <Box display="flex" gap={2} sx={{ mb: 2 }}>
-            <TextField
-              name="duration"
-              label="Duración"
-              variant="standard"
-              type="number"
-              value={newTraining.duration}
-              onChange={handleInputChange}
-            />
+            <Box>
+              <InputLabel id="demo-simple-select-label">Duración (min)</InputLabel>
+              <TextField
+                name="duration"
+                variant="standard"
+                type="number"
+                value={newTraining.duration}
+                onChange={handleInputChange}
+                size="medium"
+              />
+            </Box>
             <Box sx={{ flex: 1 }}>
               <InputLabel id="demo-simple-select-label">Intensidad</InputLabel>
               <Select
@@ -224,10 +254,11 @@ const TrainingList: React.FC<TrainingListProps> = ({ userId }) => {
                 value={newTraining.intensity}
                 label="Intensidad"
                 onChange={handleInputChange}
+                size="small"
               >
-                <MenuItem value={"Alta"}>Alta</MenuItem>
-                <MenuItem value={"Media"}>Media</MenuItem>
-                <MenuItem value={"Baja"}>Baja</MenuItem>
+                <MenuItem className='intensity alta' value={"Alta"}>Alta</MenuItem>
+                <MenuItem className='intensity media' value={"Media"}>Media</MenuItem>
+                <MenuItem className='intensity baja' value={"Baja"}>Baja</MenuItem>
               </Select>
             </Box>
           </Box>
