@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import './Home.css';
 import { Button } from '@mui/material';
+import { FaDumbbell, FaUserFriends, FaChartBar } from 'react-icons/fa';
 
 const HomePage: React.FC = () => {
   const { user } = useAuth();
@@ -55,7 +56,20 @@ const HomePage: React.FC = () => {
                 <Link to={feature.url} key={feature.id} className="feature-home-card">
                   <div>
                     <div className="home-card-header">
-                      <h3 className='feature-title'>{feature.name}</h3>
+                      <h3 className='feature-title'>
+                        {(() => {
+                          switch (feature.name) {
+                            case 'Entrenamientos':
+                              return <FaDumbbell className="feature-icon" />;
+                            case 'Amigos':
+                              return <FaUserFriends className="feature-icon" />;
+                            case 'Estadísticas':
+                              return <FaChartBar className="feature-icon" />;
+                            default:
+                              return null;
+                          }
+                        })()}
+                        {feature.name}</h3>
                       <Button variant="outlined" color="primary" >Ir</Button>
                     </div>
                     <div className="home-card-body">

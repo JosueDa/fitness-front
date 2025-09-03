@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
-import { FaRunning, FaDumbbell, FaUser, FaSignOutAlt, FaHome, FaUserFriends, FaChalkboard } from 'react-icons/fa';
+import { FaRunning, FaDumbbell, FaUser, FaSignOutAlt, FaHome, FaUserFriends, FaChartBar } from 'react-icons/fa';
 import './Header.css';
 
 const Header: React.FC = () => {
@@ -77,7 +77,7 @@ const Header: React.FC = () => {
               </li>
               <li className={isActive('/stats') ? 'active' : ''}>
                 <Link to="/stats">
-                  <FaChalkboard className="nav-icon" /> Stats
+                  <FaChartBar className="nav-icon" /> Stats
                 </Link>
               </li>
             </ul>
