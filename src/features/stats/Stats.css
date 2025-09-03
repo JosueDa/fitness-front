@@ -80,13 +80,13 @@
 }
 
 .calendar-table-effort{
-    transform: scale(4);
+    transform: scale(3);
 }
 
 .calendar-table-effort.none{
     opacity: 0.2;
-    margin-bottom: -2rem;
     color: white;
+    transform: scale(5);
 }
 
 .calendar-table-effort.baja{
@@ -95,7 +95,7 @@
 }
 
 .calendar-table-effort.media{
-    margin-bottom: 2rem;
+    bottom: 2rem;
     color: #ff9800;
 }
 
@@ -193,21 +193,6 @@
     letter-spacing: 0.5px;
 }
 
-.intensity.alta {
-    background-color: #ffebee;
-    color: #c62828;
-}
-
-.intensity.baja {
-    background-color: #e8f5e9;
-    color: #2e7d32;
-}
-
-.intensity.media {
-    background-color: #fff8e1;
-    color: #f57f17;
-}
-
 .loading-spinner {
     width: 40px;
     height: 40px;
@@ -259,8 +244,6 @@
     align-content: center;
 }
 
-.stats-card-details {}
-
 .stats-card.Alta {
     background-color: #c62828;
 }
@@ -296,7 +279,7 @@
 .stats-grid {
     display: grid;
     gap: 1rem;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    grid-template-columns: repeat(4, 1fr);
     margin-bottom: 1rem;
 }
 
@@ -341,7 +324,6 @@
     color: white;
 }
 
-/* statsList.css - Versión mejorada */
 .stats-list {
     max-width: 1200px;
     margin: 0 auto;
@@ -363,37 +345,42 @@
 }
 
 @media (max-width: 600px) {
+    .stats-list {
+          padding: 1rem;
+      }
+
+    .stats-by-training-grid {
+          grid-template-columns: 1fr;
+      }
+
+    .stats-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      }
+
+    .stats-header-button {
+          width: 100%;
+      }
+
+    .stats-header {
+          margin-bottom: 0rem;
+      }
+
+    .stats-header-title-desktop {
+          display: none;
+      }
+
+    .stats-header-title-mobile {
+          display: block;
+          padding-bottom: 20px;
+      }
+
+    .stats-header {
+          display: block;
+          margin-top: 0;
+      }
+
+    .stats-title{
+      font-size: 10pt;
+    }
 }
-.stats-list {
-      padding: 1rem;
-  }
-
-.stats-by-training-grid {
-      grid-template-columns: 1fr;
-  }
-
-.stats-grid {
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  }
-
-.stats-header-button {
-      width: 100%;
-  }
-
-.stats-header {
-      margin-bottom: 0rem;
-  }
-
-.stats-header-title-desktop {
-      display: none;
-  }
-
-.stats-header-title-mobile {
-      display: block;
-      padding-bottom: 20px;
-  }
-
-.stats-header {
-      display: block;
-      margin-top: 0;
-  }

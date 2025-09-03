@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import './Login.css';
 
-const API_URL = 'http://localhost:3000';
+const API_URL = process.env.REACT_APP_API_URL;
 
 interface LoginResponse {
   user: {

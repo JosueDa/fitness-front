@@ -34,6 +34,24 @@ export const saveTraining = async (userId: number,training: Training): Promise<T
   }
 };
 
+export const deleteTraining = async (trainingId: number): Promise<Training> => {
+  try {
+    const response = await fetch(`${API_URL}/delete/${trainingId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`Error ${response.status}: ${response.statusText}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error saving training:', error);
+    throw error;
+  }
+};
+
 export const updateTraining = async (training: Training): Promise<Training> => {
   try {
     const response = await fetch(`${API_URL}/${training.id}`, {

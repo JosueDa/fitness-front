@@ -4,9 +4,12 @@ import { useAuth } from '../../auth/AuthContext';
 import { fetchUserData } from '../../api/userApi';
 import './TrainingList.css';
 import { Box, Button, InputLabel, MenuItem, Modal, Select, TextField, Typography } from '@mui/material';
-import { fetchTrainingsByUser, saveTraining, updateTraining } from '../../api/trainingApi';
+import { deleteTraining, fetchTrainingsByUser, saveTraining, updateTraining } from '../../api/trainingApi';
 import { FaPen, FaTrash } from 'react-icons/fa';
 import type { User, Training } from '../../interfaces';
+import { Exercise } from '../../interfaces/Exercise';
+import { Zone } from '../../interfaces/Zone';
+import { fetchAllExercises, fetchAllZones } from '../../api/exerciseApi';
 
 interface TrainingListProps {
   userId?: number;
@@ -15,6 +18,8 @@ interface TrainingListProps {
 const TrainingList: React.FC<TrainingListProps> = ({ userId }) => {
   const { user } = useAuth();
   const [trainings, setTrainings] = useState<Training[]>([]);
+  const [exercises, setExercises] = useState<Exercise[]>([]);
+  const [zones, setZones] = useState<Zone[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [userData, setUserData] = useState<User | null>(null);
@@ -29,6 +34,8 @@ const TrainingList: React.FC<TrainingListProps> = ({ userId }) => {
     intensity: '',
     date: new Date().toISOString(),
     note: '',
+    userId: 0,
+    trainingexercise:[],
   });
 
   const handleInputChange = (e: any) => {
@@ -53,6 +60,14 @@ const TrainingList: React.FC<TrainingListProps> = ({ userId }) => {
     }
     handleClose();
   };
+  
+  const handleDelete = async (trainingId: number) => {
+    if (!user?.id) return;
+    if(window.confirm('¿Estás seguro que quieres borrar esta sesión de entrenamiento?')){
+      await deleteTraining(trainingId);
+      setTrainings(trainings.filter(i=>i.id != trainingId));
+    }
+  };
 
   const handleOpen = (training?: Training) => {
     if (training) {
@@ -67,6 +82,8 @@ const TrainingList: React.FC<TrainingListProps> = ({ userId }) => {
         intensity: '',
         date: new Date().toISOString(),
         note: '',
+        userId: 0,
+        trainingexercise:[],
       });
       setEditingTraining(null);
     }
@@ -86,6 +103,15 @@ const TrainingList: React.FC<TrainingListProps> = ({ userId }) => {
         // Cargar entrenamientos
         const trainingResponse = await fetchTrainingsByUser(effectiveUserId);
         setTrainings(trainingResponse);
+
+        // Cargar ejercicios
+        const exercisesResponse = await fetchAllExercises();
+        setExercises(exercisesResponse);
+
+        // Cargar zonas
+        const zonesResponse = await fetchAllZones();
+        setZones(zonesResponse);
+
         setError(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Error desconocido');
@@ -181,8 +207,7 @@ const TrainingList: React.FC<TrainingListProps> = ({ userId }) => {
                     className="delete-button"
                     onClick={e => {
                       e.preventDefault();
-                      // Necesitamos una function que lance una alerta preguntando si está seguro y de confirmar, elminar el record. Tal vez vale la pena agregar una columna a todas las tablas llamada isDeleted para hacer puro soft delete.
-                      handleOpen(training);
+                      handleDelete(training.id);
                     }}>
                     <FaTrash className="delete-icon" />
                   </Link>
