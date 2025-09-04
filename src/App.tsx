@@ -8,6 +8,7 @@ import LoginPage from './pages/Auth/Login';
 import TrainingListPage from './pages/Training/TrainingList';
 import PrivateRoute from './components/PrivateRoute/PrivateRoute';
 import NotFoundPage from './pages/NotFound/NotFound';
+import StatsPage from './pages/Stats/Stats';
 
 const App: React.FC = () => {
   return (
@@ -39,6 +40,14 @@ const App: React.FC = () => {
               element={
                 <PrivateRoute>
                   <TrainingListPage />
+                </PrivateRoute>
+              } 
+            />
+            <Route 
+              path="stats" 
+              element={
+                <PrivateRoute>
+                  <StatsPage />
                 </PrivateRoute>
               } 
             />

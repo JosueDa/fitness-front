@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
-import { FaRunning, FaDumbbell, FaUser, FaSignOutAlt } from 'react-icons/fa';
+import { FaRunning, FaDumbbell, FaUser, FaSignOutAlt, FaHome, FaUserFriends, FaChartBar } from 'react-icons/fa';
 import './Header.css';
 
 const Header: React.FC = () => {
@@ -20,15 +20,27 @@ const Header: React.FC = () => {
     <header className="app-header">
       <div className="header-container">
         <div className="header-content">
+          <div className="mobile-adjustment">
+            <div className="user-avatar">
+            </div>
+          </div>
+
           <div className="logo-container">
-            <Link to="/" className="app-title">FitTrack</Link>
+            <Link to="/" className="app-title"><FaRunning /> FitTrack</Link>
             <p className="app-subtitle">Tu compañero de entrenamiento</p>
           </div>
+
+          {!user &&(
+            <div className="mobile-adjustment">
+            <div className="user-avatar">
+              </div>
+            </div>
+          )}
           
-          {user ? (
+          {user && (
             <div className="user-info">
               <div className="user-dropdown">
-                <span className="user-name">Hola, {user.name}</span>
+                <span className="user-name">Hola, <b>{user.name}</b></span>
                 <div className="user-avatar">
                   <FaUser />
                 </div>
@@ -42,25 +54,30 @@ const Header: React.FC = () => {
                 </div>
               </div>
             </div>
-          ) : (
-            <div className="auth-actions">
-              <Link to="/login" className="login-button">Iniciar sesión</Link>
-              <Link to="/register" className="register-button">Registrarse</Link>
-            </div>
           )}
         </div>
         
         {user && (
           <nav className="app-nav">
             <ul>
-              <li className={isActive('/') ? 'active' : ''}>
+              <li className={(isActive('/') ? 'active nav-home' : 'nav-home')}>
                 <Link to="/">
-                  <FaRunning className="nav-icon" /> Inicio
+                  <FaHome className="nav-icon" /> Inicio
                 </Link>
               </li>
               <li className={isActive('/trainings') ? 'active' : ''}>
                 <Link to="/trainings">
                   <FaDumbbell className="nav-icon" /> Entrenamientos
+                </Link>
+              </li>
+              <li className={isActive('/friends') ? 'active' : ''}>
+                <Link to="/friends">
+                  <FaUserFriends className="nav-icon" /> Amigos
+                </Link>
+              </li>
+              <li className={isActive('/stats') ? 'active' : ''}>
+                <Link to="/stats">
+                  <FaChartBar className="nav-icon" /> Stats
                 </Link>
               </li>
             </ul>

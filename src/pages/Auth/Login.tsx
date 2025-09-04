@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import './Login.css';
 
-const API_URL = 'http://localhost:3000';
+const API_URL = process.env.REACT_APP_API_URL;
 
 interface LoginResponse {
   user: {
@@ -88,6 +88,7 @@ const LoginPage: React.FC = () => {
         <button type="submit" className="login-button" disabled={loading}>
           {loading ? 'Cargando...' : 'Ingresar'}
         </button>
+        <p>Si aún no tienes una cuenta, <Link to="/register"><b>regístrate aquí</b></Link></p>
       </form>
     </div>
   );
