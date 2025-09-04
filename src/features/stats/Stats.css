@@ -141,11 +141,13 @@
     display: block;
     flex: 1;
     margin-bottom: 1rem;
+    margin-top: 0.5rem;
 }
 
 .card-body p {
     display: flex;
     margin: 0.75rem 0;
+    margin-bottom: 0;
     color: var(--text-color);
 }
 
@@ -158,6 +160,14 @@
 .card-details {
     display: flex;
     justify-content: space-between;
+    margin-bottom: 0.5rem;
+    
+}
+
+.card-details-name {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .card-header {
@@ -174,6 +184,34 @@
     color: var(--primary-color);
 }
 
+.details-button {
+  padding: 0.5rem;
+}
+
+.edit-button {
+  padding: 0.5rem 1rem;
+  background-color: transparent;
+  color: #2e7d32;
+  border: 1px solid #2e7d32;
+  border-radius: var(--border-radius);
+  font-size: 0.9rem;
+  transition: all 0.3s;
+}
+
+.exercise-main-stat{
+    display: flex;
+    justify-content: space-between;
+}
+
+.exercise-main-stats{
+    margin-bottom: 1rem;
+}
+
+.details-button a{
+  padding: 0;
+  margin: 0;
+}
+
 .empty-state p {
     margin-bottom: 1rem;
     color: var(--text-light);
@@ -184,6 +222,11 @@
     color: var(--error-color);
 }
 
+.feature-icon{
+      margin: 0;
+      font-size: 1rem;
+  }
+
 .intensity {
     padding: 0.25rem 0.75rem;
     border-radius: 1rem;
@@ -191,6 +234,8 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    background-color: #e8f5e9;
+    color: #2e7d32;
 }
 
 .loading-spinner {
@@ -201,6 +246,17 @@
     border: 4px solid rgba(25, 118, 210, 0.1);
     border-top: 4px solid var(--primary-color);
     border-radius: 50%;
+}
+
+.chart-card {
+    text-align: center;
+    box-shadow: var(--box-shadow);
+    min-height: 8rem;
+    padding: 0.5rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background-color: var(--secondary-color);
+    border-radius: var(--border-radius);
+    margin-bottom: 1rem;
 }
 
 .stats-by-training-card {
@@ -345,6 +401,10 @@
 }
 
 @media (max-width: 600px) {
+    .card-details-name {
+        font-size: smaller;
+        max-width: 80%;
+    }
     .stats-list {
           padding: 1rem;
       }
