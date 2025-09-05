@@ -5,11 +5,10 @@ import { fetchUserData } from '../../api/userApi';
 import './Friends.css';
 import type { User, Training } from '../../interfaces';
 import { FaHeart } from 'react-icons/fa';
-import { Box, Button, Modal } from '@mui/material';
+import { Box, Button, InputLabel, Modal, TextField } from '@mui/material';
 import { Friend } from '../../interfaces/Friend';
-import { fetchFriendsByUser } from '../../api/friendshipApi';
+import { addFriend, deleteFriend, fetchFriendsByUser, fetchUserByUsername } from '../../api/friendshipApi';
 import { likePhoto } from '../../api/trainingApi';
-import { Padding } from '@mui/icons-material';
 
 
 interface FriendsProps {
@@ -22,9 +21,27 @@ const Friends: React.FC<FriendsProps> = ({ userId }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [userData, setUserData] = useState<User | null>(null);
-  const [editingFriend, setEditingFriend] = useState<Friend | null>(null);
   const [isFriendshipsOpen, setIsFriendshipsOpen] = useState(false);
-  const [isAddFriendOpen, setIsAddFriendOpen] = React.useState(false);
+  const [isAddFriendOpen, setIsAddFriendOpen] = useState(false);
+  const [friendAdded, setFriendAdded] = useState(false);
+  const [userNotFound, setuserNotFound] = useState(false);
+  const [message, setMessage] = useState<string | null>(null); // Stores the message content
+  const [isError, setIsError] = useState(false); // Indicates if it's an error message
+  const [isNewFriend, setIsNewFriend] = useState<Friend>({
+    id: 0,
+    name: '',
+    userName : '',
+    lastPhoto: {
+      id: 0,
+      trainingId: 0,
+      like: 0,
+      url: '',
+      intensity: '',
+      date: '',
+    },
+  });
+  const [isLiked, setIsLiked] = useState(false);
+  const [isLikedId, setIsLikedId] = useState(0);
   const effectiveUserId = userId || user?.id;
 
   useEffect(() => {
@@ -36,10 +53,11 @@ const Friends: React.FC<FriendsProps> = ({ userId }) => {
         const userResponse = await fetchUserData(effectiveUserId);
         setUserData(userResponse);
 
-        // Cargar entrenamientos
-        const friendshipResponse = await fetchFriendsByUser(effectiveUserId);
+        // Cargar amistades
+        let friendshipResponse = await fetchFriendsByUser(effectiveUserId);
+        friendshipResponse.sort(lastPhotoId);
         setFriends(friendshipResponse);
-        console.log(friendshipResponse);
+
         setError(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Error desconocido');
@@ -51,12 +69,47 @@ const Friends: React.FC<FriendsProps> = ({ userId }) => {
     loadData();
   }, [effectiveUserId]);
 
-  const handleDoubleTap = async (friend : Friend) => {
-    friend.lastPhoto.like = await likePhoto(friend.lastPhoto.id);
-    setEditingFriend(friend);
-
-    if(editingFriend) setFriends(friends.map(t => t.id === friend.id ? editingFriend : t));
+  const lastPhotoId = (a:Friend, b:Friend)=> {
+    if(a.lastPhoto == null){
+      return 1;
+    }
+    if ( a.lastPhoto.id < b.lastPhoto.id ){
+      return -1;
+    }
+    if ( a.lastPhoto.id > b.lastPhoto.id ){
+      return 1;
+    }
+    return 0;
   };
+  
+  const name = (a:Friend, b:Friend)=> {
+    if ( a.name < b.name ){
+      return -1;
+    }
+    if ( a.name > b.name ){
+      return 1;
+    }
+    return 0;
+  };
+
+  const handleDoubleTap = async (friend : Friend) => {
+    setIsLiked(true);
+    setIsLikedId(friend.id);
+    setTimeout(() => {
+        setIsLiked(false);
+        setIsLikedId(0);
+    }, 500); 
+    
+    friend.lastPhoto.like = await likePhoto(friend.lastPhoto.id);
+  };
+
+  const handleDelete = async (friendId: number) => {
+      if (!user?.id) return;
+      if (window.confirm('¿Estás seguro que quieres eliminar a este amigo?')) {
+        await deleteFriend(friendId, user.id);
+        setFriends(friends.filter(i => i.id !== friendId));
+      }
+    };
   
   const toggleCollapse = () => {
     setIsFriendshipsOpen(!isFriendshipsOpen);
@@ -65,6 +118,54 @@ const Friends: React.FC<FriendsProps> = ({ userId }) => {
   const handleOpen = (training?: Training) => {
       setIsAddFriendOpen(true);
     };
+
+  const handleClose = () => {
+    setIsAddFriendOpen(false);
+    setFriendAdded(false);
+    setuserNotFound(false);
+  }
+
+  const handleUsernameInputChange = (e: any) => {
+    const { name, value, type } = e.target;
+    if (name === 'username') {
+      setIsNewFriend(prev => ({
+        ...prev,
+        userName: value
+      }));
+    }
+  };
+
+  const handleSearch = async () => {
+    if (!user?.id) return;
+    let userResult = await fetchUserByUsername(isNewFriend.userName);
+    if(userResult != null && userResult.id !== 0){
+      if(userResult.id !== user.id){
+        let newFriend = await addFriend(userResult.id, user.id);
+        if(newFriend === true){
+          setFriends([userResult, ...friends]);
+          setMessage('Amigo Añadido');
+          setIsError(false);
+        }else{
+          setMessage('No se pudño añadir a ese usuario');
+          setIsError(true);
+        }
+      }else{
+        setMessage('No te puedes añadir a ti mismo como amigo');
+        setIsError(true);
+      }
+    }else{
+      setMessage('No se encontró a ningún usuario con ese username');
+      setIsError(true);
+    }
+    setTimeout(() => {
+      setMessage(null);
+      setIsError(false);
+      setIsNewFriend(prev => ({
+        ...prev,
+        userName: ''
+      }));
+    }, 2000); 
+  };
 
   if (!user) {
     return (
@@ -112,20 +213,20 @@ const Friends: React.FC<FriendsProps> = ({ userId }) => {
         <Button className='friends-header-button' variant="outlined" color="primary" onClick={() => handleOpen()}><b>Agregar Amigo +</b></Button>
       </div>
 
-      {friends.length == 0 ? (
+      {friends.length === 0 ? (
         <div className="empty-state">
           <p>¡Aún no tienes ningun amigo!</p>
           <Button className='friends-header-button' variant="outlined" color="primary" onClick={() => handleOpen()}><b>Agregar a mi primer Amigo</b></Button>
         </div>
       ) : (
         <div>
-          {friends.filter(i=>i.lastPhoto != null).length == 0 ? (
+          {friends.filter(i=>i.lastPhoto != null && i.lastPhoto.url != null).length === 0 ? (
           <div className="empty-state">
             <p>Tu amigos no han publicado ninguna foto<br></br> <b>¡Recuérdales hacerlo durante su próxima sesión de entrenamiento!</b></p>
           </div>
           ): (
             <div className='friends-grid'>
-              {friends.filter(i=>i.lastPhoto.url!='').map(friend => (
+              {friends.filter(i=>i.lastPhoto != null && i.lastPhoto.url!=='').map(friend => (
                 <div key={friend.id} className="friends-card">
                   <div className="friends-card-header">
                     <div className='friends-card-title-container'>
@@ -136,8 +237,8 @@ const Friends: React.FC<FriendsProps> = ({ userId }) => {
                     </span>
                   </div>
                   <div className="friends-card-body">
-                    <div className='friends-card-details' onDoubleClick={() => handleDoubleTap(friend)}>
-                      <img className='friends-card-image' src={friend.lastPhoto?.url}></img>
+                    <div className={isLiked && isLikedId === friend.id ? 'friends-card-details hearts-bg liked-container':'friends-card-details hearts-bg'}onDoubleClick={() => handleDoubleTap(friend)}>
+                      <img className={isLiked && isLikedId === friend.id ? 'friends-card-image liked-image':'friends-card-image'} src={friend.lastPhoto?.url} alt={`Última foto de ${friend.name}`}></img>
                     </div>
                   </div>
                   <div className="friends-card-footer">
@@ -156,13 +257,13 @@ const Friends: React.FC<FriendsProps> = ({ userId }) => {
           </Button>
           <div className="friends-grid" style={{gap: '1rem'}}>
             {isFriendshipsOpen && (
-              friends.map(friend => (
+              friends.sort(name).map(friend => (
                 <div key={friend.id} className="friends-card" style={{marginTop:'1rem', marginBottom:'0', paddingBottom:'0.5rem'}}>
                   <div className="friends-card-header" style={{marginBottom:'0'}}>
                     <div className='friends-card-title-container'>
                       <h3 className='friends-card-title'>{friend.name}</h3>
                     </div>
-                    <span className={`delete-friend-span`}>
+                    <span className={`delete-friend-span`} onClick={()=>handleDelete(friend.id)}>
                       <b className='friends-card-intensity-text'>eliminar</b>
                     </span>
                   </div>
@@ -172,6 +273,39 @@ const Friends: React.FC<FriendsProps> = ({ userId }) => {
           </div>
         </div>
       )}
+      <Modal
+        open={isAddFriendOpen}
+        onClose={handleClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box className="modal-box">
+          <div className="card-header">
+              <h3 className='stats-by-training-title'>Agregar amigo</h3>
+            </div>
+          <Box display="flex" sx={{marginTop:'1rem'}}>
+              <TextField
+              sx={{width:'100%'}}
+                name="username"
+                placeholder='Introduce el nombre de usuario'
+                variant="standard"
+                value={isNewFriend.userName}
+                size="medium"
+                onChange={handleUsernameInputChange}
+              />
+            </Box>
+            <Box>
+              {message && (
+              <div className={isError ? 'error-message' : 'success-message'}>
+                <p>{message}</p>
+              </div>
+              )}
+            </Box>
+            <Box display="flex" justifyContent="center" mt={2}>
+              <Button variant="contained" onClick={handleSearch}>Agregar</Button>
+            </Box>
+          </Box>
+      </Modal>
     </div >
   );
 };

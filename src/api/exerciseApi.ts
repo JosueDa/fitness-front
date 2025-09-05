@@ -1,6 +1,5 @@
 import { Exercise } from "../interfaces/Exercise";
 import { Zone } from "../interfaces/Zone";
-import { ExerciseDB } from '../interfaces/ExerciseDB';
 
 const API_URL = `${process.env.REACT_APP_API_URL}`;
 

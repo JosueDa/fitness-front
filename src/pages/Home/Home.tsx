@@ -74,7 +74,7 @@ const HomePage: React.FC = () => {
                     </div>
                     <div className="home-card-body">
                       <div className="home-card-image">
-                        <img src={feature.imageUrl}></img>
+                        <img src={feature.imageUrl} alt={feature.name}></img>
                       </div>
                       <div className='home-card-details'>
                         <p>{feature.description}</p>

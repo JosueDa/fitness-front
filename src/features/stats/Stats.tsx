@@ -25,7 +25,7 @@ interface mainStats {
 }
 
 class ExerciseDetails{
-  zone: string;
+  name: string;
   trainingExecises : TrainingExercise[];
   repsMean : number;
   weightMean : number;
@@ -33,8 +33,8 @@ class ExerciseDetails{
   scatterData : ScatterData[];
   lineData : LineData[];
 
-  constructor(zone: string, trainingExecises: TrainingExercise[], repsMean : number, weightMean : number, maxWeight : number, scatterData : ScatterData[], lineData : LineData[]){
-    this.zone = zone;
+  constructor(name: string, trainingExecises: TrainingExercise[], repsMean : number, weightMean : number, maxWeight : number, scatterData : ScatterData[], lineData : LineData[]){
+    this.name = name;
     this.trainingExecises = trainingExecises;
     this.repsMean = repsMean;
     this.weightMean = weightMean;
@@ -117,7 +117,7 @@ const Stats: React.FC<StatsProps> = ({ userId }) => {
   }
 
   const handleOpen = (exercise: Exercise) => {
-    let exercisesList : TrainingExercise[][] = trainings.sort((a, b) => a.id - b.id).map(i=>i.trainingexercise.sort((a, b) => a.id - b.id).filter(o=>o.exercise.id == exercise.id));
+    let exercisesList : TrainingExercise[][] = trainings.sort((a, b) => a.id - b.id).map(i=>i.trainingexercise.sort((a, b) => a.id - b.id).filter(o=>o.exercise.id === exercise.id));
     exercisesList = exercisesList.filter(i=>i.length>0);
     // scatterData
     let exercises = exercisesList.reduce((accumulator, currentArray) => {
@@ -262,31 +262,31 @@ const Stats: React.FC<StatsProps> = ({ userId }) => {
   if (trainings.length>0){
     // Para los main stats
     // Saca la suma de todos los entrenamientos existentes
-    let timesList : number [] = trainings.filter(i=>i.duration != undefined).map(i=>i.duration);
+    let timesList : number [] = trainings.filter(i=>i.duration !== undefined).map(i=>i.duration);
     let totalTime : number = 0;
     if(timesList.length>0){
       totalTime = timesList.reduce((sum, current) => sum + current, 0);
     }
 
     // Saca una lista de todas las intensidades registradas
-    let intensity : string[] = trainings.filter(i=>i.intensity!=undefined).map(i=>i.intensity);
+    let intensity : string[] = trainings.filter(i=>i.intensity!==undefined).map(i=>i.intensity);
 
     // Saca una lista de todas las zonas de los ejercicios registrados
-    let zonesLists = trainings.filter(i=>i.trainingexercise != undefined).map(i=> i.trainingexercise.map(i=>i.exercise?.zone?.name));
+    let zonesLists = trainings.filter(i=>i.trainingexercise !== undefined).map(i=> i.trainingexercise.map(i=>i.exercise?.zone?.name));
     let zones : string[] = [];
     if(zonesLists.length>0){
       zones = mergeStringArraysInArray(zonesLists);
-    }else if(zonesLists.length == 1){
+    }else if(zonesLists.length === 1){
       zones = zonesLists[0];
     }
 
     // Saca la lista de todos los pesos cargados
-    let weightLists = trainings.filter(i=>i.trainingexercise != undefined).map(i=> i.trainingexercise?.map(i=>i.weight));
+    let weightLists = trainings.filter(i=>i.trainingexercise !== undefined).map(i=> i.trainingexercise?.map(i=>i.weight));
     let weight: number [] = [];
     
     if(weightLists.length>0){
       weight = mergeNumberArraysInArray(weightLists);
-    }else if(weightLists.length == 1){
+    }else if(weightLists.length === 1){
       weight = weightLists[0];
     }
 
@@ -322,7 +322,7 @@ const Stats: React.FC<StatsProps> = ({ userId }) => {
     latestTrainings.forEach(training=> training.Date.setHours(0,0,0,0));
 
     // Para las estadísticas por ejercicio
-    zonesWithExercise = zonesAll.map(i=>new ZoneWithExercise(i.id, i.name, exercisesAll.filter(o=>o.zoneId == i.id)))
+    zonesWithExercise = zonesAll.map(i=>new ZoneWithExercise(i.id, i.name, exercisesAll.filter(o=>o.zoneId === i.id)))
   }
 
   return (
@@ -377,50 +377,50 @@ const Stats: React.FC<StatsProps> = ({ userId }) => {
                       <tbody>
                           <tr>
                               <td>
-                                {latestTrainings.find(i => i.Date.getTime() == lastWeekDates[0].getTime()) ? (
-                                  <p className={`calendar-table-effort ${latestTrainings.find(i => i.Date.getTime() == lastWeekDates[0].getTime())?.Intensity.toLowerCase()}`}><b>•</b></p>
+                                {latestTrainings.find(i => i.Date.getTime() === lastWeekDates[0].getTime()) ? (
+                                  <p className={`calendar-table-effort ${latestTrainings.find(i => i.Date.getTime() === lastWeekDates[0].getTime())?.Intensity.toLowerCase()}`}><b>•</b></p>
                                 ): (
                                   <p className='calendar-table-effort none'><b>◦</b></p>
                                 )}
                               </td> 
                               <td>
-                                {latestTrainings.find(i => i.Date.getTime() == lastWeekDates[1].getTime()) ? (
-                                  <p className={`calendar-table-effort ${latestTrainings.find(i => i.Date.getTime() == lastWeekDates[1].getTime())?.Intensity.toLowerCase()}`}><b>•</b></p>
+                                {latestTrainings.find(i => i.Date.getTime() === lastWeekDates[1].getTime()) ? (
+                                  <p className={`calendar-table-effort ${latestTrainings.find(i => i.Date.getTime() === lastWeekDates[1].getTime())?.Intensity.toLowerCase()}`}><b>•</b></p>
                                 ): (
                                   <p className='calendar-table-effort none'><b>◦</b></p>
                                 )}
                               </td> 
                               <td>
-                                {latestTrainings.find(i => i.Date.getTime() == lastWeekDates[2].getTime()) ? (
-                                  <p className={`calendar-table-effort ${latestTrainings.find(i => i.Date.getTime() == lastWeekDates[2].getTime())?.Intensity.toLowerCase()}`}><b>•</b></p>
+                                {latestTrainings.find(i => i.Date.getTime() === lastWeekDates[2].getTime()) ? (
+                                  <p className={`calendar-table-effort ${latestTrainings.find(i => i.Date.getTime() === lastWeekDates[2].getTime())?.Intensity.toLowerCase()}`}><b>•</b></p>
                                 ): (
                                   <p className='calendar-table-effort none'><b>◦</b></p>
                                 )}
                               </td> 
                               <td>
-                                {latestTrainings.find(i => i.Date.getTime() == lastWeekDates[3].getTime()) ? (
-                                  <p className={`calendar-table-effort ${latestTrainings.find(i => i.Date.getTime() == lastWeekDates[3].getTime())?.Intensity.toLowerCase()}`}><b>•</b></p>
+                                {latestTrainings.find(i => i.Date.getTime() === lastWeekDates[3].getTime()) ? (
+                                  <p className={`calendar-table-effort ${latestTrainings.find(i => i.Date.getTime() === lastWeekDates[3].getTime())?.Intensity.toLowerCase()}`}><b>•</b></p>
                                 ): (
                                   <p className='calendar-table-effort none'><b>◦</b></p>
                                 )}
                               </td> 
                               <td>
-                                {latestTrainings.find(i => i.Date.getTime() == lastWeekDates[4].getTime()) ? (
-                                  <p className={`calendar-table-effort ${latestTrainings.find(i => i.Date.getTime() == lastWeekDates[4].getTime())?.Intensity.toLowerCase()}`}><b>•</b></p>
+                                {latestTrainings.find(i => i.Date.getTime() === lastWeekDates[4].getTime()) ? (
+                                  <p className={`calendar-table-effort ${latestTrainings.find(i => i.Date.getTime() === lastWeekDates[4].getTime())?.Intensity.toLowerCase()}`}><b>•</b></p>
                                 ): (
                                   <p className='calendar-table-effort none'><b>◦</b></p>
                                 )}
                               </td> 
                               <td>
-                                {latestTrainings.find(i => i.Date.getTime() == lastWeekDates[5].getTime()) ? (
-                                  <p className={`calendar-table-effort ${latestTrainings.find(i => i.Date.getTime() == lastWeekDates[5].getTime())?.Intensity.toLowerCase()}`}><b>•</b></p>
+                                {latestTrainings.find(i => i.Date.getTime() === lastWeekDates[5].getTime()) ? (
+                                  <p className={`calendar-table-effort ${latestTrainings.find(i => i.Date.getTime() === lastWeekDates[5].getTime())?.Intensity.toLowerCase()}`}><b>•</b></p>
                                 ): (
                                   <p className='calendar-table-effort none'><b>◦</b></p>
                                 )}
                               </td> 
                               <td>
-                                {latestTrainings.find(i => i.Date.getTime() == lastWeekDates[6].getTime()) ? (
-                                  <p className={`calendar-table-effort ${latestTrainings.find(i => i.Date.getTime() == lastWeekDates[6].getTime())?.Intensity.toLowerCase()}`}><b>•</b></p>
+                                {latestTrainings.find(i => i.Date.getTime() === lastWeekDates[6].getTime()) ? (
+                                  <p className={`calendar-table-effort ${latestTrainings.find(i => i.Date.getTime() === lastWeekDates[6].getTime())?.Intensity.toLowerCase()}`}><b>•</b></p>
                                 ): (
                                   <p className='calendar-table-effort none'><b>◦</b></p>
                                 )}
@@ -486,7 +486,7 @@ const Stats: React.FC<StatsProps> = ({ userId }) => {
         {viewingExerciseDetails? (
           <Box className="modal-box">
             <div className="card-header">
-              <h3 className='stats-by-training-title'>{viewingExerciseDetails.zone}</h3>
+              <h3 className='stats-by-training-title'>{viewingExerciseDetails.name}</h3>
             </div>
             <div className="card-body">
               <div className='exercise-main-stats'>
