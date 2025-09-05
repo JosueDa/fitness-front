@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import './Login.css';
+
 
 const API_URL = process.env.REACT_APP_API_URL;
 
@@ -21,6 +22,8 @@ const LoginPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const successMessage = (location.state as { successMessage?: string })?.successMessage;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,6 +67,7 @@ const LoginPage: React.FC = () => {
     <div className="login-container">
       <h2>Iniciar sesión</h2>
       {error && <div className="error-message">{error}</div>}
+      {successMessage && <div className="success-message">{successMessage}</div>}
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label>Correo electrónico:</label>

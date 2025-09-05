@@ -5,6 +5,7 @@ import Layout from './components/Layout/Layout';
 import HomePage from './pages/Home/Home';
 import ProfilePage from './pages/Profile/Profile';
 import LoginPage from './pages/Auth/Login';
+import RegisterPage from './pages/Register/RegisterPage';
 import TrainingListPage from './pages/Training/TrainingList';
 import PrivateRoute from './components/PrivateRoute/PrivateRoute';
 import NotFoundPage from './pages/NotFound/NotFound';
@@ -19,7 +20,7 @@ const App: React.FC = () => {
           <Route path="/" element={<Layout />}>
 
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" />
+          <Route path="/register" element={<RegisterPage />}/>
             <Route 
               index 
               element={
