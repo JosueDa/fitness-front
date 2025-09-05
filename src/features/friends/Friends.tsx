@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useReducer, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import { fetchUserData } from '../../api/userApi';
@@ -23,10 +23,8 @@ const Friends: React.FC<FriendsProps> = ({ userId }) => {
   const [userData, setUserData] = useState<User | null>(null);
   const [isFriendshipsOpen, setIsFriendshipsOpen] = useState(false);
   const [isAddFriendOpen, setIsAddFriendOpen] = useState(false);
-  const [friendAdded, setFriendAdded] = useState(false);
-  const [userNotFound, setuserNotFound] = useState(false);
-  const [message, setMessage] = useState<string | null>(null); // Stores the message content
-  const [isError, setIsError] = useState(false); // Indicates if it's an error message
+  const [message, setMessage] = useState<string | null>(null);
+  const [isError, setIsError] = useState(false);
   const [isNewFriend, setIsNewFriend] = useState<Friend>({
     id: 0,
     name: '',
@@ -43,6 +41,7 @@ const Friends: React.FC<FriendsProps> = ({ userId }) => {
   const [isLiked, setIsLiked] = useState(false);
   const [isLikedId, setIsLikedId] = useState(0);
   const effectiveUserId = userId || user?.id;
+  const [, forceUpdate] = useReducer(x => x + 1, 0);
 
   useEffect(() => {
     if (!effectiveUserId) return;
@@ -95,12 +94,12 @@ const Friends: React.FC<FriendsProps> = ({ userId }) => {
   const handleDoubleTap = async (friend : Friend) => {
     setIsLiked(true);
     setIsLikedId(friend.id);
+    friend.lastPhoto.like = await likePhoto(friend.lastPhoto.id);
+    forceUpdate();
     setTimeout(() => {
         setIsLiked(false);
         setIsLikedId(0);
     }, 500); 
-    
-    friend.lastPhoto.like = await likePhoto(friend.lastPhoto.id);
   };
 
   const handleDelete = async (friendId: number) => {
@@ -115,14 +114,12 @@ const Friends: React.FC<FriendsProps> = ({ userId }) => {
     setIsFriendshipsOpen(!isFriendshipsOpen);
   };
 
-  const handleOpen = (training?: Training) => {
+  const handleOpen = () => {
       setIsAddFriendOpen(true);
     };
 
   const handleClose = () => {
     setIsAddFriendOpen(false);
-    setFriendAdded(false);
-    setuserNotFound(false);
   }
 
   const handleUsernameInputChange = (e: any) => {
@@ -146,7 +143,7 @@ const Friends: React.FC<FriendsProps> = ({ userId }) => {
           setMessage('Amigo Añadido');
           setIsError(false);
         }else{
-          setMessage('No se pudño añadir a ese usuario');
+          setMessage('No se pudo añadir a ese usuario');
           setIsError(true);
         }
       }else{
@@ -164,7 +161,7 @@ const Friends: React.FC<FriendsProps> = ({ userId }) => {
         ...prev,
         userName: ''
       }));
-    }, 2000); 
+    }, 1000); 
   };
 
   if (!user) {
