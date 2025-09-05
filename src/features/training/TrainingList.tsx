@@ -65,11 +65,11 @@ const TrainingList: React.FC<TrainingListProps> = ({ userId }) => {
   };
 
   const handleInputChangeExercice = (e: any) => {
-    const { name, value } = e.target;
+    const { name, value, type  } = e.target;
 
     setNewExercise(prev => ({
       ...prev,
-      [name as string]: typeof value === 'number' ? value : isNaN(Number(value)) ? value : Number(value),
+      [name]: type === 'number' ? ((value.charCode >= 48 && value.charCode <= 5 || value == '' || value.includes('.')) ? '' : Math.trunc(value)) : value,
     }));
 
     if (name === 'zoneId') {
@@ -98,7 +98,7 @@ const TrainingList: React.FC<TrainingListProps> = ({ userId }) => {
     } else {
       // Crear
       const saved = await saveTraining(user.id, newTraining);
-      setTrainings([...trainings, saved]);
+      setTrainings([saved, ...trainings]);
     }
     handleClose();
   };
@@ -306,9 +306,7 @@ const TrainingList: React.FC<TrainingListProps> = ({ userId }) => {
       {trainings.length === 0 ? (
         <div className="empty-state">
           <p>No hay entrenamientos registrados</p>
-          <Link to="/training/new" className="add-button">
-            Crear mi primer entrenamiento
-          </Link>
+          <Button className='training-header-button' variant="outlined" color="primary" onClick={() => handleOpen()}><b>Crear mi primer entrenamiento</b></Button>
         </div>
       ) : (
         <div className="training-grid">
@@ -496,12 +494,12 @@ const TrainingList: React.FC<TrainingListProps> = ({ userId }) => {
                 type="number"
                 value={newExercise.repetition}
                 onChange={handleInputChangeExercice}
-                size="medium"
+                size="small"
               />
             </Box>
 
             <Box>
-              <InputLabel id="demo-simple-select-label">Peso (KG)</InputLabel>
+              <InputLabel id="demo-simple-select-label">Peso (Kg)</InputLabel>
               <TextField
                 name="weight"
                 variant="standard"
@@ -514,33 +512,31 @@ const TrainingList: React.FC<TrainingListProps> = ({ userId }) => {
           </Box>
 
           <Box display="flex" justifyContent="center" mt={2} mb={2}>
-            <Button variant="contained" onClick={handleAddExercise}>{newExercise.trainingExerciseId > 0 ? "Editar" : "Agregar"}</Button>
+            <Button variant="outlined" className='exercise-button' onClick={handleAddExercise}>{newExercise.trainingExerciseId > 0 ? "Editar" : "Agregar"}</Button>
           </Box>
 
           {
             exercisesTraining.length > 0 && (
               <>
                 <TableContainer sx={{ maxHeight: 250, maxWidth: 700 }} component={Paper}>
-                  <Table stickyHeader aria-label="sticky table">
+                  <Table stickyHeader aria-label="sticky table" size="small">
                     <TableHead>
                       <TableRow>
                         <StyledTableCell>Ejercicio</StyledTableCell>
                         <StyledTableCell>Zona</StyledTableCell>
                         <StyledTableCell>Repeticiones</StyledTableCell>
                         <StyledTableCell>Peso</StyledTableCell>
-                        <StyledTableCell></StyledTableCell>
+                        <StyledTableCell>Eliminar</StyledTableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
                       {exercisesTraining.map((et) => (
                         <StyledTableRow key={et.trainingExerciseId}>
-                          <StyledTableCell >
-                            {et.exercise}
-                          </StyledTableCell>
-                          <StyledTableCell align="right">{et.zone}</StyledTableCell>
-                          <StyledTableCell align="right">{et.repetition}</StyledTableCell>
-                          <StyledTableCell align="right">{et.weight}</StyledTableCell>
-                          <StyledTableCell align="right">
+                            <StyledTableCell align="center" onClick={e => { e.preventDefault(); handleEditExercise(et);}}>{et.exercise}</StyledTableCell>
+                            <StyledTableCell align="center" onClick={e => { e.preventDefault(); handleEditExercise(et);}}>{et.zone}</StyledTableCell>
+                            <StyledTableCell align="center" onClick={e => { e.preventDefault(); handleEditExercise(et);}}>{et.repetition}</StyledTableCell>
+                            <StyledTableCell align="center" onClick={e => { e.preventDefault(); handleEditExercise(et);}}>{et.weight}</StyledTableCell>
+                          <StyledTableCell align="center">
                             <div className='card-footer-right'>
                               <Link
                                 to="#"
@@ -551,15 +547,6 @@ const TrainingList: React.FC<TrainingListProps> = ({ userId }) => {
                                 }}>
                                 <FaTrash className="delete-icon" />
                               </Link>
-                              <Link
-                                to="#"
-                                className="edit-button"
-                                onClick={e => {
-                                  e.preventDefault();
-                                  handleEditExercise(et);
-                                }}>
-                                <FaPen className="edit-icon" />
-                              </Link>
                             </div>
                           </StyledTableCell>
                         </StyledTableRow>
@@ -567,9 +554,7 @@ const TrainingList: React.FC<TrainingListProps> = ({ userId }) => {
                     </TableBody>
                   </Table>
                 </TableContainer>
-                <Box display="flex" justifyContent="center" mt={2}>
-                  <Button variant="contained" onClick={handleSave}>Guardar</Button>
-                </Box>
+
               </>
             )
           }

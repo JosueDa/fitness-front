@@ -1,0 +1,288 @@
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+100% {
+      transform: rotate(360deg);
+  }
+}
+
+.add-button {
+    padding: 0.75rem 1.5rem;
+    transition: background-color 0.3s;
+    background-color: var(--primary-color);
+    border: none;
+    border-radius: var(--border-radius);
+    font-weight: 500;
+    color: white;
+    text-align: center;
+}
+
+.add-button:hover {
+    background-color: var(--primary-dark);
+}
+
+.auth-button {
+    display: inline-block;
+    margin-top: 1rem;
+    padding: 0.75rem 1.5rem;
+    transition: background-color 0.3s;
+    background-color: var(--primary-color);
+    border: none;
+    border-radius: var(--border-radius);
+    color: white;
+}
+
+.auth-button:hover {
+    background-color: var(--primary-dark);
+}
+
+.auth-required {
+    box-shadow: var(--box-shadow);
+    padding: 3rem;
+    background: white;
+    border-radius: var(--border-radius);
+    text-align: center;
+}
+
+.delete-friend-span{
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #d32f2f;
+    background-color: #ffebee;
+}
+
+.empty-state{
+    text-align: center;
+    padding: 3rem;
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+}
+
+.empty-state p {
+    margin-bottom: 1rem;
+    color: var(--text-light);
+}
+
+.error-message h2 {
+    margin-bottom: 1rem;
+    color: var(--error-color);
+}
+
+.feature-icon{
+      margin: 0;
+      font-size: 1rem;
+  }
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    margin: 0 auto 1rem;
+    animation: spin 1s linear infinite;
+    border: 4px solid rgba(25, 118, 210, 0.1);
+    border-top: 4px solid var(--primary-color);
+    border-radius: 50%;
+}
+
+.friends-by-training-card {
+    box-shadow: var(--box-shadow);
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background: white;
+    border-radius: var(--border-radius);
+    color: white;
+}
+
+.friends-by-training-card:hover {
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    transform: translateY(-5px);
+}
+
+.friends-by-training-grid {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    margin-top: 1rem;
+}
+
+.friends-card {
+  background: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  padding: 1.5rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-width: 100%;
+}
+
+.friends-card-body {
+  margin-top: 1rem;
+  display: block;
+  flex: 1;
+  margin-bottom: 1rem;
+  max-width: 100%;
+}
+
+.friends-card-date{
+    opacity: 0.4;
+}
+
+.friends-card-details{
+    max-width: 100%;
+}
+
+.friends-card-details img{
+    width: 100%;
+    height: 100%;
+}
+
+.friends-card-footer{
+    display: flex;
+    justify-content: space-between;
+}
+
+.friends-card-header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.friends-card-header p{
+    display: inline-block;
+}
+
+.friends-card-heart{
+    color: #d32f2f;
+    margin-right: 0.5rem;
+}
+
+.friends-card-likes{
+    display: flex;
+    align-items: center;
+}
+
+.friends-card-title{
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    font-size: x-large;
+    font-weight: bold;
+    color: var(--primary-color)
+}
+
+.friends-card-title-container{
+    max-width: 75%;
+}
+
+.friends-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.friends-header h2 {
+    margin: 0;
+    font-size: 1.8rem;
+    color: var(--primary-color);
+}
+
+.friends-header-button {
+    display: block;
+    align-items: center;
+    border: 2px solid var(--primary-color);
+}
+
+.friends-header-title-desktop {
+    display: block;
+}
+
+.friends-header-title-mobile {
+    display: none;
+    text-align: center;
+}
+
+.friends-card-image {
+  background: white;
+  border-radius: var(--border-radius);
+  display: flex;
+  object-fit: cover;
+  aspect-ratio: 9/16;
+}
+
+.friends-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.friends-icon {
+    transform-origin: bottom left;
+    scale: 5;
+    z-index: 1;
+    opacity: 0.2;
+    margin-bottom: -7rem;
+    margin-left: 0.5rem;
+    color: white;
+}
+
+.friends-list {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.friends-collapse-button {
+    width: 100%;
+}
+
+@media (max-width: 600px) {
+    .friends-list {
+          padding: 1rem;
+      }
+
+    .friends-by-training-grid {
+          grid-template-columns: 1fr;
+      }
+
+    .friends-grid {
+          grid-template-columns: 1fr;
+      }
+
+    .friends-header-button {
+          width: 100%;
+      }
+
+    .friends-header {
+          margin-top: 0;
+          display:block;
+      }
+
+    .friends-header-title-desktop {
+          display: none;
+      }
+
+    .friends-header-title-mobile {
+          display: block;
+          padding-bottom: 20px;
+      }
+
+    .friends-header {
+          display: block;
+          margin-top: 0;
+      }
+}

@@ -287,6 +287,10 @@
 
 /* Responsive */
 @media (max-width: 600px) {
+  .exercise-button{
+    width: 100%;
+  }
+  
   .training-list {
     padding: 1rem;
   }

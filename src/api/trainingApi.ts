@@ -159,3 +159,29 @@ export const getExerciseTraining = async (trainingId: number): Promise<ExerciseD
     throw error;
   }
 };
+
+export const likePhoto = async (photoId: number): Promise<number> => {
+  try {
+    const data = {
+      number: 1
+    };
+
+    const response = await fetch(`${API_URL}/photo/${photoId}/like/`,
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Error ${response.status}: ${response.statusText}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error liking photo:', error);
+    throw error;
+  }
+};

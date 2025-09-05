@@ -10,10 +10,10 @@ import { Box, Button, Modal } from '@mui/material';
 import { Exercise } from '../../interfaces/Exercise';
 import { Zone } from '../../interfaces/Zone';
 import { fetchAllExercises, fetchAllZones } from '../../api/exerciseApi';
-import { BarChart, LineChart, ScatterChart  } from '@mui/x-charts';
+import { LineChart, ScatterChart  } from '@mui/x-charts';
 
 
-interface TrainingListProps {
+interface StatsProps {
   userId?: number;
 }
 
@@ -90,7 +90,7 @@ class ZoneWithExercise {
   }
 }
 
-const TrainingList: React.FC<TrainingListProps> = ({ userId }) => {
+const Stats: React.FC<StatsProps> = ({ userId }) => {
   const { user } = useAuth();
   const [trainings, setTrainings] = useState<Training[]>([]);
   const [exercisesAll, setExercises] = useState<Exercise[]>([]);
@@ -567,4 +567,4 @@ const TrainingList: React.FC<TrainingListProps> = ({ userId }) => {
 };
 
 
-export default TrainingList;
+export default Stats;
