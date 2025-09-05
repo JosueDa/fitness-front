@@ -4,7 +4,7 @@ import { useAuth } from '../../auth/AuthContext';
 import { fetchUserData } from '../../api/userApi';
 import './TrainingList.css';
 import { Box, Button, InputLabel, MenuItem, Modal, Select, TextField, Typography } from '@mui/material';
-import { deleteExerciseTraining, deleteTraining, fetchTrainingsByUser, getExerciseTraining, saveExerciseTraining, saveTraining, updateExerciseTraining, updateTraining } from '../../api/trainingApi';
+import { addTrainingPhoto, deleteExerciseTraining, deleteTraining, deleteTrainingPhoto, fetchTrainingsByUser, getExerciseTraining, getPhotoTraining, saveExerciseTraining, saveTraining, updateExerciseTraining, updateTraining } from '../../api/trainingApi';
 import { FaPen, FaTrash } from 'react-icons/fa';
 import type { User, Training, Exercise, Zone, ExerciseDB } from '../../interfaces';
 import { fetchAllExercises, fetchAllZones, fetchExercisesByZone } from '../../api/exerciseApi';
@@ -16,6 +16,8 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import { styled } from '@mui/material/styles';
+import { fileToBase64 } from '../../Utilities/FileToBase64';
+import { TrainingPhoto } from '../../interfaces/TrainingPhoto';
 
 interface TrainingListProps {
   userId?: number;
@@ -34,6 +36,7 @@ const TrainingList: React.FC<TrainingListProps> = ({ userId }) => {
   const [openExercice, setOpenExercice] = React.useState(false);
   const effectiveUserId = userId || user?.id;
   const [editingTraining, setEditingTraining] = useState<Training | null>(null);
+  const [updateImage, setUpdateImage] = useState(false);
   const [newTraining, setNewTraining] = useState<Training>({
     id: 0,
     name: '',
@@ -54,6 +57,8 @@ const TrainingList: React.FC<TrainingListProps> = ({ userId }) => {
     repetition: 0,
     weight: 0
   });
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [previewBase64, setPreviewBase64] = useState<string | null>(null);
 
 
   const handleInputChange = (e: any) => {
@@ -80,7 +85,6 @@ const TrainingList: React.FC<TrainingListProps> = ({ userId }) => {
     }
 
     if (name === 'exerciseId') {
-
       setNewExercise(prev => ({
         ...prev,
         exercise: exercises.find(z => z.id === Number(value))?.name || ''
@@ -93,11 +97,24 @@ const TrainingList: React.FC<TrainingListProps> = ({ userId }) => {
 
     if (editingTraining) {
       // Actualizar
-      await updateTraining(newTraining);
-      setTrainings(trainings.map(t => t.id === newTraining.id ? newTraining : t));
+      if (updateImage) {
+        await deleteTrainingPhoto(newTraining.trainingPhoto?.id || 0);
+        addTrainingPhoto(newTraining.id, selectedImage ? await fileToBase64(selectedImage) : '');
+      }
+
+      const updated = await updateTraining(newTraining);
+
+      setTrainings(trainings.map(t => t.id === updated.id ? updated : t));
     } else {
       // Crear
       const saved = await saveTraining(user.id, newTraining);
+
+      if (updateImage)
+      {
+        const trainingPhoto = await addTrainingPhoto(saved.id, selectedImage ? await fileToBase64(selectedImage) : '');
+        saved.trainingPhoto = trainingPhoto;
+      }
+
       setTrainings([...trainings, saved]);
     }
     handleClose();
@@ -112,9 +129,15 @@ const TrainingList: React.FC<TrainingListProps> = ({ userId }) => {
   };
 
   const handleOpen = (training?: Training) => {
+    setSelectedImage(null);
+    setPreviewBase64(null);
+    setUpdateImage(false);
     if (training) {
       setNewTraining(training);
       setEditingTraining(training);
+      if (training.trainingPhoto) {
+        setPreviewBase64(training.trainingPhoto.url);
+      }
     } else {
       setNewTraining({
         id: 0,
@@ -192,7 +215,6 @@ const TrainingList: React.FC<TrainingListProps> = ({ userId }) => {
 
   }, [newExercise.zoneId]);
 
-
   const handleAddExercise = () => {
     if (!newExercise.zoneId || !newExercise.exerciseId || newExercise.repetition <= 0 || newExercise.weight < 0) {
       alert('Por favor completa todos los campos del ejercicio');
@@ -227,7 +249,7 @@ const TrainingList: React.FC<TrainingListProps> = ({ userId }) => {
             zone: zoneName,
             exercise: exerciseName?.name,
           };
-          
+
           setExercisesTraining(exercisesTraining.map(et => et.trainingExerciseId == exerciseWithDesc.trainingExerciseId ? exerciseWithDesc : et));
         });
     }
@@ -256,6 +278,12 @@ const TrainingList: React.FC<TrainingListProps> = ({ userId }) => {
     }
   }
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setUpdateImage(true);
+      setSelectedImage(e.target.files[0]);
+    }
+  };
 
   if (!user) {
     return (
@@ -432,6 +460,42 @@ const TrainingList: React.FC<TrainingListProps> = ({ userId }) => {
             onChange={handleInputChange}
           />
 
+          <Box sx={{ mb: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <InputLabel>Imagen del entrenamiento</InputLabel>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              style={{ display: 'block', marginTop: 8 }}
+            />
+            {selectedImage && (
+              <>
+                <Typography variant="body2" sx={{ mt: 1, textAlign: 'center' }}>
+                  Imagen seleccionada: {selectedImage.name}
+                </Typography>
+                <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center', width: '100%' }}>
+
+                  <img
+                    src={URL.createObjectURL(selectedImage)}
+                    alt="Vista previa"
+                    style={{ maxWidth: '100%', maxHeight: 150, borderRadius: 8 }}
+                  />
+                </Box>
+              </>
+            )}
+            {
+              !updateImage && (
+                <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center', width: '100%' }}>
+                  <img
+                    src={previewBase64 ?? undefined}
+                    alt="Vista previa"
+                    style={{ maxWidth: '100%', maxHeight: 150, borderRadius: 8 }}
+                  />
+                </Box>
+              )
+            }
+          </Box>
+
           <Box display="flex" justifyContent="center" mt={2}>
             <Button variant="contained" onClick={handleSave}>Guardar</Button>
           </Box>
@@ -567,9 +631,6 @@ const TrainingList: React.FC<TrainingListProps> = ({ userId }) => {
                     </TableBody>
                   </Table>
                 </TableContainer>
-                <Box display="flex" justifyContent="center" mt={2}>
-                  <Button variant="contained" onClick={handleSave}>Guardar</Button>
-                </Box>
               </>
             )
           }

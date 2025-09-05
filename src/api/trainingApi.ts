@@ -1,5 +1,7 @@
 import { ExerciseDB } from "../interfaces";
 import { Training } from "../interfaces/Training";
+import { TrainingPhoto } from '../interfaces/TrainingPhoto';
+import { addMimeHeader } from "../Utilities/AddMimeHeader";
 
 const API_URL = `${process.env.REACT_APP_API_URL}/training`;
 
@@ -16,7 +18,7 @@ export const fetchTrainingsByUser = async (userId: number): Promise<Training[]> 
   }
 };
 
-export const saveTraining = async (userId: number, training: Training): Promise<Training> => {
+export const saveTraining = async (userId: number, training: Training): Promise<any> => {
   try {
     const response = await fetch(`${API_URL}/user/${userId}`, {
       method: 'POST',
@@ -53,14 +55,22 @@ export const deleteTraining = async (trainingId: number): Promise<Training> => {
   }
 };
 
-export const updateTraining = async (training: Training): Promise<Training> => {
+export const updateTraining = async (training: Training): Promise<any> => {
   try {
+
+    const payload = {
+      activity_type: training.activity_type,
+      duration: training.duration,
+      intensity: training.intensity,
+      note: training.note,
+    };
+
     const response = await fetch(`${API_URL}/${training.id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(training),
+      body: JSON.stringify(payload),
     });
     if (!response.ok) {
       throw new Error(`Error ${response.status}: ${response.statusText}`);
@@ -74,8 +84,6 @@ export const updateTraining = async (training: Training): Promise<Training> => {
 
 export const saveExerciseTraining = async (trainingId: number, exerciseDB: ExerciseDB): Promise<ExerciseDB> => {
   try {
-
-    console.log(JSON.stringify(exerciseDB));
     const response = await fetch(`${API_URL}/${trainingId}/exercises`,
       {
         method: 'POST',
@@ -98,15 +106,15 @@ export const saveExerciseTraining = async (trainingId: number, exerciseDB: Exerc
 
 export const deleteExerciseTraining = async (trainingExerciseId: number) => {
   try {
-    const response = await fetch(`${API_URL}/exercise/${trainingExerciseId}`,
+    await fetch(`${API_URL}/exercise/${trainingExerciseId}`,
       {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
         },
       }
-    );  
-  }  catch (error) {
+    );
+  } catch (error) {
     console.error('Error deleting exercise from training:', error);
     throw error;
   }
@@ -114,7 +122,7 @@ export const deleteExerciseTraining = async (trainingExerciseId: number) => {
 
 export const updateExerciseTraining = async (trainingExerciseId: number, exerciseDB: ExerciseDB): Promise<ExerciseDB> => {
   try {
-    
+
     const payload = {
       trainingExerciseId: exerciseDB.trainingExerciseId,
       trainingId: exerciseDB.trainingId,
@@ -151,7 +159,7 @@ export const getExerciseTraining = async (trainingId: number): Promise<ExerciseD
     if (!response.ok) {
       throw new Error(`Error ${response.status}: ${response.statusText}`);
     }
-    
+
     return await response.json();
 
   } catch (error) {
@@ -159,3 +167,56 @@ export const getExerciseTraining = async (trainingId: number): Promise<ExerciseD
     throw error;
   }
 };
+
+export const addTrainingPhoto = async (trainingId: number, base64: string): Promise<TrainingPhoto> => {
+  try {
+    const imgBase64 = addMimeHeader(base64);
+    const response = await fetch(`${API_URL}/${trainingId}/photo`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ base64: imgBase64 }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error ${response.status}: ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error uploading photo:', error);
+    throw error;
+  }
+};
+
+export const deleteTrainingPhoto = async (photoId: number): Promise<any> => {
+  try {
+    const response = await fetch(`${API_URL}/photo/${photoId}`,
+      { method: 'DELETE' }
+    );
+
+    if (!response.ok)
+      throw new Error(`Error ${response.status}: ${response.statusText}`);
+
+    return await response.json();
+
+  } catch (error) {
+    console.error('Error uploading photo:', error);
+    throw error;
+  }
+};
+
+export const getPhotoTraining = async (trainingId: number): Promise<TrainingPhoto> => {
+  try {
+    const response = await fetch(`${API_URL}/photo/${trainingId}`);
+    if (!response.ok) 
+      throw new Error(`Error ${response.status}: ${response.statusText}`);
+
+    return await response.json();
+
+  } catch (error) {
+    console.error('Error uploading photo:', error);
+    throw error;
+  }
+};   
