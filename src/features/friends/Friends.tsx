@@ -69,14 +69,20 @@ const Friends: React.FC<FriendsProps> = ({ userId }) => {
   }, [effectiveUserId]);
 
   const lastPhotoId = (a:Friend, b:Friend)=> {
-    if(a.lastPhoto == null){
-      return 1;
-    }
-    if ( a.lastPhoto.id < b.lastPhoto.id ){
+    if(a.lastPhoto != null && b.lastPhoto == null){
       return -1;
     }
-    if ( a.lastPhoto.id > b.lastPhoto.id ){
+    if(a.lastPhoto == null && b.lastPhoto != null){
       return 1;
+    }
+    if(a.lastPhoto == null && b.lastPhoto == null){
+      return 0;
+    }
+    if ( a.lastPhoto.id < b.lastPhoto.id ){
+      return 1;
+    }
+    if ( a.lastPhoto.id > b.lastPhoto.id ){
+      return -1;
     }
     return 0;
   };
