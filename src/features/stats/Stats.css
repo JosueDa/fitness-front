@@ -144,6 +144,11 @@
     margin-top: 0.5rem;
 }
 
+.card-body.exercises {
+    max-height: 25vh;
+    overflow-y: auto;
+}
+
 .card-body p {
     display: flex;
     margin: 0.75rem 0;
@@ -489,6 +494,10 @@
 }
 
 @media (max-width: 600px) {
+    .card-body.exercises {
+        max-height: unset;
+    }
+
     .card-details-name {
         font-size: smaller;
         max-width: 80%;

@@ -205,7 +205,7 @@ const TrainingList: React.FC<TrainingListProps> = ({ userId }) => {
 
         // Cargar zonas
         const zonesResponse = await fetchAllZones();
-        setZones(zonesResponse);
+        setZones(zonesResponse.filter(i=>i.name!='Cardio'));
 
         setError(null);
       } catch (err) {

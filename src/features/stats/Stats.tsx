@@ -242,7 +242,7 @@ const Stats: React.FC<StatsProps> = ({ userId }) => {
 
         // Cargar zonas
         const zonesResponse = await fetchAllZones();
-        setZones(zonesResponse);
+        setZones(zonesResponse.filter(i=>i.name!='Cardio'));
 
         setError(null);
       } catch (err) {
@@ -565,7 +565,7 @@ const Stats: React.FC<StatsProps> = ({ userId }) => {
                   />
                 </div>
               </div>
-              <div className='radar-card'>
+              <div className='radar-card triangle'>
                 <div className='radar-title-container green'>
                   <h3>Distribución de zonas</h3>
                 </div>
@@ -603,7 +603,7 @@ const Stats: React.FC<StatsProps> = ({ userId }) => {
                     <b>{zone.Exercises.length} ejercicios</b>
                   </span>
                 </div>
-                <div className="card-body">
+                <div className="card-body exercises">
                   {zone.Exercises.map(exercise => (
                     <div key={exercise.id} className='card-details'>
                       <div className='card-details-name'>
