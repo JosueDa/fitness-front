@@ -75,8 +75,8 @@
   }
 
 .feature-icon{
-      margin-right: 8px;
-      font-size: 1rem;
+    margin-right: 1rem;
+    font-size: 1rem;
   }
 
 .feature-list {
@@ -110,6 +110,12 @@
 .feature-home-card:hover {
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
     transform: translateY(-5px);
+}
+
+.feature-title{
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
 }
 
 .home-card-header {

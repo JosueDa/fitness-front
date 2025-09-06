@@ -184,6 +184,44 @@
     color: var(--primary-color);
 }
 
+.chart-footer-container{
+    display: flex;
+    padding: 0rem;
+    margin-top: -1.5rem;
+    margin-bottom: -0.5rem;
+    margin-right: 0.5rem;
+    justify-content: end;
+}
+
+.chart-title-container{
+    text-align: center;
+    padding: 0.5rem;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+    margin-left: -1rem;
+    margin-right: -1rem;
+    margin-bottom: 1rem;
+}
+
+.chart-title-container.red{
+    background-color: #e91e63;
+}
+
+.chart-title-container.orange{
+    background-color: #ff9800;
+}
+
+.chart-title-container.blue{
+    background-color: #3084d7;
+}
+
+.chart-title-container.green{
+    background-color: #4caf50;
+}
+
+.chart-title-container.gray{
+    background-color: #333333;
+}
+
 .details-button {
   padding: 0.5rem;
 }
@@ -251,12 +289,62 @@
 .chart-card {
     text-align: center;
     box-shadow: var(--box-shadow);
-    min-height: 8rem;
-    padding: 0.5rem;
+    display: block;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-bottom: 1rem;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    background-color: var(--secondary-color);
+    background: #101316;
     border-radius: var(--border-radius);
+    color: white;
+    margin-top: 1rem;
+}
+
+.chart-card div{
+    z-index:-11;
+}
+
+.radar-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    margin-top: 1rem;
     margin-bottom: 1rem;
+}
+
+.radar-card {
+    box-shadow: var(--box-shadow);
+    display: block;
+    padding: 1rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background: #333333;
+    border-radius: var(--border-radius);
+    color: white;
+}
+
+.radar-card.triangle svg {
+    margin-bottom: -3rem;
+}
+
+.radar-chart{
+    z-index: 2;
+}
+
+.radar-title-container{
+    text-align: center;
+    padding: 1rem;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+    margin-left: -1rem;
+    margin-top: -1rem;
+    margin-right: -1rem;
+}
+
+.radar-title-container.blue{
+    background-color: #3084d7;
+}
+
+.radar-title-container.green{
+    background-color: #4caf50;
 }
 
 .stats-by-training-card {
@@ -404,6 +492,10 @@
     .card-details-name {
         font-size: smaller;
         max-width: 80%;
+    }
+
+    .radar-grid {
+        grid-template-columns: 1fr;
     }
     .stats-list {
           padding: 1rem;

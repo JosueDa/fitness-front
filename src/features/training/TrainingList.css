@@ -125,6 +125,20 @@
   font-weight:  bold;
 }
 
+.intensity-dropdown.alta {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+.intensity-dropdown.media {
+  background-color: #fff8e1;
+  color: #f57f17;
+}
+
+.intensity-dropdown.baja {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
 .card-body {
   display: block;
   flex: 1;
@@ -159,6 +173,7 @@
 .card-footer {
   display: flex;
   justify-content: space-between;
+  padding-top: 1rem;
   border-top: 1px solid var(--secondary-color);
 }
 

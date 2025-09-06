@@ -10,7 +10,25 @@ import { Box, Button, Modal } from '@mui/material';
 import { Exercise } from '../../interfaces/Exercise';
 import { Zone } from '../../interfaces/Zone';
 import { fetchAllExercises, fetchAllZones } from '../../api/exerciseApi';
-import { LineChart, ScatterChart  } from '@mui/x-charts';
+import { LineChart, RadarChart, ScatterChart, SparkLineChart  } from '@mui/x-charts';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+
+const darkTheme = createTheme({
+  palette: {
+    mode: 'dark',
+  },
+});
+
+const name = (a:Exercise, b:Exercise)=> {
+    if ( a.name < b.name ){
+      return -1;
+    }
+    if ( a.name > b.name ){
+      return 1;
+    }
+    return 0;
+  };
 
 
 interface StatsProps {
@@ -31,16 +49,22 @@ class ExerciseDetails{
   weightMean : number;
   maxWeight : number;
   scatterData : ScatterData[];
-  lineData : LineData[];
+  repsLineData : LineData[];
+  repsFullLineData : FullLineData[];
+  weightLineData : LineData[];
+  weightFullLineData : FullLineData[];
 
-  constructor(name: string, trainingExecises: TrainingExercise[], repsMean : number, weightMean : number, maxWeight : number, scatterData : ScatterData[], lineData : LineData[]){
+  constructor(name: string, trainingExecises: TrainingExercise[], repsMean : number, weightMean : number, maxWeight : number, scatterData : ScatterData[], repsLineData : LineData[], repsFullLineData : FullLineData[], weightLineData : LineData[], weightFullLineData : FullLineData[]){
     this.name = name;
     this.trainingExecises = trainingExecises;
     this.repsMean = repsMean;
     this.weightMean = weightMean;
     this.maxWeight = maxWeight;
     this.scatterData = scatterData;
-    this.lineData = lineData;
+    this.repsLineData = repsLineData;
+    this.repsFullLineData = repsFullLineData;
+    this.weightLineData = weightLineData;
+    this.weightFullLineData = weightFullLineData;
   }
 }
 
@@ -63,6 +87,18 @@ class LineData{
   constructor(data: number[], range? : number[]){
     this.data = data;
     this.range = range;
+  }
+}
+
+class FullLineData{
+  data: (number | null)[];
+  range?: number[];
+  showMark: boolean;
+
+  constructor(data: (number | null)[], range? : number[]){
+    this.data = data;
+    this.range = range;
+    this.showMark = false;
   }
 }
 
@@ -90,6 +126,11 @@ class ZoneWithExercise {
   }
 }
 
+interface zonesRadarData {
+  name: string;
+  times: number;
+}
+
 const Stats: React.FC<StatsProps> = ({ userId }) => {
   const { user } = useAuth();
   const [trainings, setTrainings] = useState<Training[]>([]);
@@ -103,6 +144,8 @@ const Stats: React.FC<StatsProps> = ({ userId }) => {
   const [viewingExerciseDetails, setViewingExerciseDetails] = useState<ExerciseDetails>();
   const effectiveUserId = userId || user?.id;
   let mainStats : mainStats[] = [];
+  let intensityRadarData: number[] = [];
+  let zonesRadarData: zonesRadarData[] = [];
   let zonesWithExercise : ZoneWithExercise[] = [];
 
   let latestTrainings : trainigDateData[] = [];
@@ -125,22 +168,57 @@ const Stats: React.FC<StatsProps> = ({ userId }) => {
     }, []);
     let scatterData = exercises.map(i=> new ScatterData(i.reps, i.weight, i.id));
 
-    // LineData
-    let lineList = exercisesList.map(i=>i.map(o=>o.reps));
-    let lineData : LineData[] = [];
+    // Reps LineData
+    let repsLineList = exercisesList.map(i=>i.map(o=>o.reps));
+    let repsLineData : LineData[] = [];
     let range: number = 0;
-    lineList.forEach((serie) =>{
+    repsLineList.forEach((serie) =>{
       range = range > serie.length ? range : serie.length;
-      lineData.push(new LineData(serie));
+      repsLineData.push(new LineData(serie));
     })
-    lineData.forEach(i=>i.range = createIncreasingNumberArray(range));
+    repsLineData.forEach(i=>i.range = createIncreasingNumberArray(range));
+    
+    
+    // Weight LineData
+    let weightLineList = exercisesList.map(i=>i.map(o=>o.weight));
+    let weightLineData : LineData[] = [];
+    weightLineList.forEach((serie) =>{
+      range = range > serie.length ? range : serie.length;
+      weightLineData.push(new LineData(serie));
+    })
+    weightLineData.forEach(i=>i.range = createIncreasingNumberArray(range));
+
+    // Reps Full Line Data
+    let fullLineRecords : number = 15;
+    let repsFullLineList : (number | null)[][] = exercisesList.length >= fullLineRecords ? exercisesList.slice(exercisesList.length-fullLineRecords).map(i=>i.map(o=>o.reps)) : exercisesList.map(i=>i.map(o=>o.reps));
+    let repsFullLineData : FullLineData[] = [];
+    let repsFullLineWholeData : (number | null)[][] = [];
+    if(repsFullLineList.length>0){
+      repsFullLineList.forEach((serie) =>{
+        repsFullLineWholeData.push(serie.concat(null));
+      })
+      repsFullLineData.push(new FullLineData(repsFullLineWholeData.flat()));
+      repsFullLineData.forEach(i=>i.range = createIncreasingNumberArray(repsFullLineData[0].data.length));
+    }
+    
+    // Weight Full Line Data
+    let weightFullLineList : (number | null)[][] = exercisesList.length >= fullLineRecords ? exercisesList.slice(exercisesList.length-fullLineRecords).map(i=>i.map(o=>o.weight)) : exercisesList.map(i=>i.map(o=>o.weight));
+    let weightFullLineData : FullLineData[] = [];
+    let weightFullLineWholeData : (number | null)[][] = [];
+    if(weightFullLineList.length>0){
+      weightFullLineList.forEach((serie) =>{
+        weightFullLineWholeData.push(serie.concat(null));
+      })
+      weightFullLineData.push(new FullLineData(weightFullLineWholeData.flat()));
+      weightFullLineData.forEach(i=>i.range = createIncreasingNumberArray(weightFullLineData[0].data.length));
+    }
 
     // Basic data
     let repsMean = parseFloat((exercises.map(i=>i.reps).reduce((sum, current) => sum + current, 0)/exercises.length).toFixed(1));
     let weightMean = parseFloat((exercises.map(i=>i.weight).reduce((sum, current) => sum + current, 0)/exercises.length).toFixed(1));
     let maxWeight = Math.max(...exercises.map(i=>i.weight));
     
-    setViewingExerciseDetails(new ExerciseDetails(exercise.name, exercises, repsMean, weightMean, maxWeight, scatterData, lineData));
+    setViewingExerciseDetails(new ExerciseDetails(exercise.name, exercises, repsMean, weightMean, maxWeight, scatterData, repsLineData, repsFullLineData, weightLineData, weightFullLineData));
     setIsDetailsOpen(true);
   };
   const handleClose = () => setIsDetailsOpen(false);
@@ -270,14 +348,28 @@ const Stats: React.FC<StatsProps> = ({ userId }) => {
 
     // Saca una lista de todas las intensidades registradas
     let intensity : string[] = trainings.filter(i=>i.intensity!==undefined).map(i=>i.intensity);
+    if(intensity.length>0){
+      intensityRadarData[0] = 100*(intensity.filter(i=>i == 'Alta').length/intensity.length);
+      intensityRadarData[1] = 100*(intensity.filter(i=>i == 'Media').length/intensity.length);
+      intensityRadarData[2] = 100*(intensity.filter(i=>i == 'Baja').length/intensity.length);
+    }else{
+      intensityRadarData = [0,0,0]
+    }
+    
 
     // Saca una lista de todas las zonas de los ejercicios registrados
     let zonesLists = trainings.filter(i=>i.trainingexercise !== undefined).map(i=> i.trainingexercise.map(i=>i.exercise?.zone?.name));
     let zones : string[] = [];
     if(zonesLists.length>0){
       zones = mergeStringArraysInArray(zonesLists);
+      for (let i = 0; i < zonesAll.length; i++) {
+        zonesRadarData[i] = { name: zonesAll[i].name, times: 100*(zones.filter(o=>o == zonesAll[i].name).length/zones.length)}
+      }
     }else if(zonesLists.length === 1){
       zones = zonesLists[0];
+      for (let i = 0; i < zonesAll.length; i++) {
+        zonesRadarData[i] = { name: zonesAll[i].name, times: 0}
+      }
     }
 
     // Saca la lista de todos los pesos cargados
@@ -322,7 +414,7 @@ const Stats: React.FC<StatsProps> = ({ userId }) => {
     latestTrainings.forEach(training=> training.Date.setHours(0,0,0,0));
 
     // Para las estadísticas por ejercicio
-    zonesWithExercise = zonesAll.map(i=>new ZoneWithExercise(i.id, i.name, exercisesAll.filter(o=>o.zoneId === i.id)))
+    zonesWithExercise = zonesAll.map(i=>new ZoneWithExercise(i.id, i.name, exercisesAll.sort(name).filter(o=>o.zoneId === i.id)))
   }
 
   return (
@@ -338,34 +430,6 @@ const Stats: React.FC<StatsProps> = ({ userId }) => {
         </div>
       ) : (
         <div>
-          <div className="stats-grid">
-            {mainStats.map(stat => (
-              <div key={`stat_${stat.Id.toString()}`} style={{marginTop:'-1rem'}}>
-                {(() => {
-                  switch (stat.Color) {
-                    case 'Tiempo':
-                      return <FaClock className="stats-icon" />;
-                    case 'Intensidad':
-                      return <FaTachometerAlt className="stats-icon" />;
-                    case 'Zona':
-                      return <FaArrowsAlt className="stats-icon" />;
-                    case 'Peso':
-                      return <FaAward className="stats-icon" />;
-                    default:
-                      return null;
-                  }
-                })()}
-                <h4 className='stats-title'>{stat.Title}</h4>
-                <div className={`stats-card ${stat.Color}`}>
-                  <div className="stats-card-body">
-                    <div className='stats-card-details'>
-                      <h2>{stat.Value}</h2>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
           <div className='calendar-container'>
             <div className='calendar-card'>
               <div className='calendar-card-header'>
@@ -441,8 +505,93 @@ const Stats: React.FC<StatsProps> = ({ userId }) => {
               </div>
             </div>
           </div>
+          <div className="stats-grid">
+            {mainStats.map(stat => (
+              <div key={`stat_${stat.Id.toString()}`} style={{marginTop:'-1rem'}}>
+                {(() => {
+                  switch (stat.Color) {
+                    case 'Tiempo':
+                      return <FaClock className="stats-icon" />;
+                    case 'Intensidad':
+                      return <FaTachometerAlt className="stats-icon" />;
+                    case 'Zona':
+                      return <FaArrowsAlt className="stats-icon" />;
+                    case 'Peso':
+                      return <FaAward className="stats-icon" />;
+                    default:
+                      return null;
+                  }
+                })()}
+                <h4 className='stats-title'>{stat.Title}</h4>
+                <div className={`stats-card ${stat.Color}`}>
+                  <div className="stats-card-body">
+                    <div className='stats-card-details'>
+                      <h2>{stat.Value}</h2>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <ThemeProvider theme={darkTheme}>
+            <CssBaseline />
+            <div className='radar-grid'>
+              <div className='radar-card triangle'>
+                <div className='radar-title-container blue'>
+                  <h3>Distribución de intensidad</h3>
+                </div>
+                <div className='radar-chart-container'>
+                  <RadarChart
+                    className='radar-chart'
+                    series={[{ label: 'Distribución de intensidad', data: intensityRadarData, valueFormatter: (value) => `${value.toFixed(2)} %`, fillArea: true,}]}
+                    colors = {['#3084d7']}
+                    radar={{
+                      max: Math.max(...intensityRadarData),
+                      metrics: ['Alta', 'Media', 'Baja'],
+                    }}
+                    height={300}
+                    margin={{
+                      bottom: 0,
+                    }}
+                    sx={{
+                      '.MuiChartsLegend-label, .MuiChartsAxis-tickLabel': {
+                        fontSize: '14pt',
+                        fontWeight: 'bold',
+                      },
+                      '.MuiChartsLegend-root': {
+                        display: 'none',
+                      },
+                    }}
+                  />
+                </div>
+              </div>
+              <div className='radar-card'>
+                <div className='radar-title-container green'>
+                  <h3>Distribución de zonas</h3>
+                </div>
+                <RadarChart
+                  height={300}
+                  series={[{ label: 'Distribución muscular', data: zonesRadarData.map(i=>i.times), valueFormatter: (value) => `${value.toFixed(2)} %`, fillArea: true, }]}
+                  colors = {['#4caf50']}
+                  radar={{
+                    max: Math.max(...zonesRadarData.map(i=>i.times)),
+                    metrics: zonesRadarData.map(i=>i.name),
+                  }}
+                  sx={{
+                    '.MuiChartsLegend-label, .MuiChartsAxis-tickLabel': {
+                      fontSize: '14pt',
+                      fontWeight: 'bold',
+                    },
+                    '.MuiChartsLegend-root': {
+                      display: 'none',
+                    },
+                  }}
+                />
+              </div>
+            </div>
+          </ThemeProvider>
           <Button variant="outlined" color="primary" className='training-collapse-button' style={{backgroundColor: 'white'}} onClick={toggleCollapse}>
-            <b>{isTrainingsOpen ? 'Estadísticas de entrenamientos -' : 'Estadísticas de entrenamientos +'}</b>
+            <b>{isTrainingsOpen ? 'Estadísticas por ejercicio -' : 'Estadísticas por ejercicio +'}</b>
           </Button>
           <div className="stats-by-training-grid">
             {isTrainingsOpen && (  
@@ -488,74 +637,175 @@ const Stats: React.FC<StatsProps> = ({ userId }) => {
             <div className="card-header">
               <h3 className='stats-by-training-title'>{viewingExerciseDetails.name}</h3>
             </div>
-            <div className="card-body">
-              <div className='exercise-main-stats'>
-                <div className='exercise-main-stat'>
-                  <p>Promedio de repeticiones:</p>
-                  <p><b>{viewingExerciseDetails.repsMean>=0 ? viewingExerciseDetails.repsMean : 'Sin datos'}</b></p>
+            {viewingExerciseDetails.repsMean > 0 ? (
+              <div className="card-body" style={{maxHeight:"60vh", overflowY: 'scroll'}}>
+                <div className='exercise-main-stats'>
+                  <div className='exercise-main-stat'>
+                    <p>Promedio de repeticiones:</p>
+                    <p><b>{viewingExerciseDetails.repsMean>=0 ? viewingExerciseDetails.repsMean : 'Sin datos'}</b></p>
+                  </div>
+                  <div className='exercise-main-stat'>
+                    <p>Promedio de peso:</p>
+                    <p><b>{viewingExerciseDetails.weightMean>=0 ? `${viewingExerciseDetails.weightMean} kg` : 'Sin datos'}</b></p>
+                  </div>
+                  <div className='exercise-main-stat'>
+                    <p>Máximo peso:</p>
+                    <p><b>{viewingExerciseDetails.maxWeight>=0 ? `${viewingExerciseDetails.maxWeight} kg` : 'Sin datos'}</b></p>
+                  </div>
                 </div>
-                <div className='exercise-main-stat'>
-                  <p>Promedio de peso:</p>
-                  <p><b>{viewingExerciseDetails.weightMean>=0 ? `${viewingExerciseDetails.weightMean} kg` : 'Sin datos'}</b></p>
-                </div>
-                <div className='exercise-main-stat'>
-                  <p>Máximo peso:</p>
-                  <p><b>{viewingExerciseDetails.maxWeight>=0 ? `${viewingExerciseDetails.maxWeight} kg` : 'Sin datos'}</b></p>
-                </div>
+                <ThemeProvider theme={darkTheme}>
+                  <CssBaseline />
+                  <div className='chart-card'>
+                    <div className='chart-title-container red'>
+                      <h4>Comportamiento histórico<br></br>de repeticiones por serie</h4>
+                    </div>
+                    <LineChart
+                      series={viewingExerciseDetails.repsFullLineData.map(key => ({
+                        data: key.data,
+                        color: '#e91e63',
+                        valueFormatter: (value) => value != null? `${value} reps` : '',
+                        showMark: false,
+                      }))}
+                      xAxis={[{ tickLabelStyle: { display: 'none' }, data: viewingExerciseDetails.repsFullLineData.length>0? viewingExerciseDetails.repsFullLineData[0].range : [0], scaleType: 'band', valueFormatter: (value: number) => 'Repeticiones', }]}
+                      height={150}
+                      grid={{ vertical: true, horizontal: true }}
+                      margin={{
+                          left: 0,
+                          right: 10,
+                          top: 10, 
+                          bottom: 0,
+                      }}
+                      localeText={{
+                        noData: 'Sin datos.',
+                      }}
+                    />
+                    <div className='chart-footer-container'>
+                      <p>*Datos de las últimas 15 series</p>
+                    </div>
+                  </div>
+                  <div className='chart-card'>
+                    <div className='chart-title-container orange'>
+                      <h4>Comportamiento histórico<br></br>de peso por serie</h4>
+                    </div>
+                    <LineChart
+                      series={viewingExerciseDetails.weightFullLineData.map(key => ({
+                        data: key.data,
+                        color: '#ff9800',
+                        valueFormatter: (value) => value != null? `${value} kg` : '',
+                        showMark: false,
+                      }))}
+                      xAxis={[{ tickLabelStyle: { display: 'none' }, data: viewingExerciseDetails.weightFullLineData.length>0? viewingExerciseDetails.weightFullLineData[0].range : [0], scaleType: 'band', valueFormatter: (value: number) => 'Peso (kg)', }]}
+                      height={150}
+                      grid={{ vertical: true, horizontal: true }}
+                      margin={{
+                          left: 0,
+                          right: 10,
+                          top: 10, 
+                          bottom: 0,
+                      }}
+                      localeText={{
+                        noData: 'Sin datos.',
+                      }}
+                    />
+                    <div className='chart-footer-container'>
+                      <p>*Datos de las últimas 15 series</p>
+                    </div>
+                  </div>
+                  <div className='chart-card'>
+                    <div className='chart-title-container blue'>
+                      <h4>Repeticiones en series</h4>
+                    </div>
+                    <LineChart
+                      series={viewingExerciseDetails.repsLineData.map(key => ({
+                        data: key.data,
+                        valueFormatter: (value) => value != null? `${value} reps` : '',
+                      }))}
+                      xAxis={[{ data: viewingExerciseDetails.repsLineData.length>0? viewingExerciseDetails.repsLineData[0].range : [0], scaleType: 'band' }]}
+                      height={150}
+                      grid={{ vertical: true, horizontal: true }}
+                      margin={{
+                          left: 0,
+                          right: 10,
+                          top: 10, 
+                          bottom: 0,
+                      }}
+                      localeText={{
+                        noData: 'Sin datos.',
+                      }}
+                    />
+                  </div>
+                  <div className='chart-card'>
+                    <div className='chart-title-container green'>
+                      <h4>Peso en series</h4>
+                    </div>
+                    <LineChart
+                      series={viewingExerciseDetails.weightLineData.map(key => ({
+                        data: key.data,
+                        valueFormatter: (value) => value != null? `${value} kg` : '',
+                      }))}
+                      xAxis={[{ data: viewingExerciseDetails.weightLineData.length>0? viewingExerciseDetails.weightLineData[0].range : [0], scaleType: 'band' }]}
+                      height={150}
+                      grid={{ vertical: true, horizontal: true }}
+                      margin={{
+                          left: 0,
+                          right: 10,
+                          top: 10, 
+                          bottom: 0,
+                      }}
+                      localeText={{
+                        noData: 'Sin datos.',
+                      }}
+                    />
+                  </div>
+                  <div className='chart-card'>
+                    <div className='chart-title-container gray'>
+                      <h4>Relación repeticiones - peso</h4>
+                    </div>
+                    <ScatterChart
+                      series={[
+                        {
+                          data: viewingExerciseDetails.scatterData,
+                          valueFormatter: (value) => value && `${value.x} reps de ${value.y} kg`,
+                        }]}
+                      xAxis={[
+                        { 
+                          min: Math.min(...viewingExerciseDetails.scatterData.map(i=>i.x))-1, 
+                          max: Math.max(...viewingExerciseDetails.scatterData.map(i=>i.x))+1,
+                          scaleType: 'linear',
+                          colorMap: {
+                            type: 'continuous',
+                            min: Math.min(...viewingExerciseDetails.scatterData.map(i=>i.x)),
+                            max: Math.max(...viewingExerciseDetails.scatterData.map(i=>i.x)),
+                            color: ['green', 'orange']
+                          }
+                        }]}
+                      yAxis={[
+                        { 
+                          min: Math.min(...viewingExerciseDetails.scatterData.map(i=>i.y))-1, 
+                          max: Math.max(...viewingExerciseDetails.scatterData.map(i=>i.y))+1 
+                        }]}
+                      height={150}
+                      grid={{ vertical: true, horizontal: true }}
+                      margin={{
+                          left: 0,
+                          right: 10,
+                          top: 10, 
+                          bottom: 0,
+                      }}
+                      localeText={{
+                        noData: 'Sin datos.',
+                      }}
+                    />
+                  </div>
+                </ThemeProvider>
               </div>
-              <div className='chart-card'>
-                <h4>Repeticiones al avanzar en series</h4>
-                <LineChart
-                  series={viewingExerciseDetails.lineData}
-                  xAxis={[{ data: viewingExerciseDetails.lineData.length>0? viewingExerciseDetails.lineData[0].range : [0], scaleType: 'band' }]}
-                  height={200}
-                  grid={{ vertical: true, horizontal: true }}
-                  margin={{
-                      left: 0,
-                      right: 10,
-                      top: 10, 
-                      bottom: 0,
-                  }}
-                  localeText={{
-                    noData: 'Sin datos.',
-                  }}
-                />
+            ):(
+              <div style={{textAlign: 'center', color:'#333333', marginTop:'1rem'}}>
+                <p><b>No hay registros de que hayas realizado este ejercicio</b></p>
+                <br></br>
+                <p>Ve a probarlo y vuelve después para ver tus estadísticas</p>
               </div>
-              <div className='chart-card'>
-                <h4>Relación repeticiones - peso</h4>
-                <ScatterChart
-                  series={[
-                    {
-                      data: viewingExerciseDetails.scatterData,
-                      valueFormatter: (value) => value && `${value.x} reps de ${value.y} kg`,
-                      color: '#4caf50'
-                    }]}
-                  xAxis={[
-                    { 
-                      min: Math.min(...viewingExerciseDetails.scatterData.map(i=>i.x))-1, 
-                      max: Math.max(...viewingExerciseDetails.scatterData.map(i=>i.x))+1,
-                      scaleType: 'linear',
-                      
-                    }]}
-                  yAxis={[
-                    { 
-                      min: Math.min(...viewingExerciseDetails.scatterData.map(i=>i.y))-1, 
-                      max: Math.max(...viewingExerciseDetails.scatterData.map(i=>i.y))+1 
-                    }]}
-                  height={200}
-                  grid={{ vertical: true, horizontal: true }}
-                  margin={{
-                      left: 0,
-                      right: 10,
-                      top: 10, 
-                      bottom: 0,
-                  }}
-                  localeText={{
-                    noData: 'Sin datos.',
-                  }}
-                />
-              </div>
-            </div>
+            )}
           </Box>
         ):(
         <Box className="modal-box">

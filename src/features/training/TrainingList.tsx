@@ -19,6 +19,16 @@ import { styled } from '@mui/material/styles';
 import { fileToBase64 } from '../../Utilities/FileToBase64';
 import { TrainingPhoto } from '../../interfaces/TrainingPhoto';
 
+const name = (a:Exercise, b:Exercise)=> {
+    if ( a.name < b.name ){
+      return -1;
+    }
+    if ( a.name > b.name ){
+      return 1;
+    }
+    return 0;
+  };
+
 interface TrainingListProps {
   userId?: number;
 }
@@ -229,6 +239,7 @@ const TrainingList: React.FC<TrainingListProps> = ({ userId }) => {
             const exerciseWithDesc = {
               ...savedExercises,
               zone: zoneName,
+              zoneId: newExercise.zoneId,
               exercise: exerciseName?.name,
             };
 
@@ -255,9 +266,9 @@ const TrainingList: React.FC<TrainingListProps> = ({ userId }) => {
 
       setNewExercise({
         trainingExerciseId: 0,
-        zoneId: 0,
+        zoneId: newExercise.zoneId,
         trainingId: 0,
-        exerciseId: 0,
+        exerciseId: newExercise.exerciseId,
         repetition: 0,
         weight: 0
       });
@@ -265,6 +276,7 @@ const TrainingList: React.FC<TrainingListProps> = ({ userId }) => {
   }
 
   const handleEditExercise = (exercise: ExerciseDB) => {
+    console.log(exercise);
     setNewExercise(exercise);
   }
 
@@ -440,9 +452,9 @@ const TrainingList: React.FC<TrainingListProps> = ({ userId }) => {
                 onChange={handleInputChange}
                 size="small"
               >
-                <MenuItem className='intensity alta' value={"Alta"}>Alta</MenuItem>
-                <MenuItem className='intensity media' value={"Media"}>Media</MenuItem>
-                <MenuItem className='intensity baja' value={"Baja"}>Baja</MenuItem>
+                <MenuItem className='intensity-dropdown alta' value={"Alta"}>Alta</MenuItem>
+                <MenuItem className='intensity-dropdown media' value={"Media"}>Media</MenuItem>
+                <MenuItem className='intensity-dropdown baja' value={"Baja"}>Baja</MenuItem>
               </Select>
             </Box>
           </Box>
@@ -543,7 +555,7 @@ const TrainingList: React.FC<TrainingListProps> = ({ userId }) => {
               size="small"
             >
               {
-                exercises.map(exercise => (
+                exercises.sort(name).map(exercise => (
                   <MenuItem key={exercise.id} value={exercise.id}>{exercise.name}</MenuItem>
                 ))
               }
